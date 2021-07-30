@@ -1,6 +1,6 @@
-# FlexRouter
+# What is new in FlexRouter
 
-*Quick link to [the compiled script for the latest version](https://urandom.ca/flexrouter/latest)*
+*Timing & Transpose feature*
 
 
 ## What is it?
