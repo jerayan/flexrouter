@@ -5,7 +5,7 @@
 
 ## What is it?
 
-FlexRouter is a highly customizable Kontakt 5 Multiscript designed for managing and unifying keyswitches across instruments from many different developers.
+FlexRouter is a highly customizable Kontakt 5 Multiscript from [Jason Tackaberry](https://github.com/jtackaberry/flexrouter) designed for managing and unifying keyswitches across instruments from many different developers.
 
 ![](https://dominiksvoboda.com/wp-content/uploads/2021/07/dominiksvoboda.com-flexrouter3.png)
 
