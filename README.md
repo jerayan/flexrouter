@@ -1,4 +1,4 @@
-# What is new in FlexRouter
+# What is new in FlexRouter 3
 
 *Timing & Transpose feature*
 
