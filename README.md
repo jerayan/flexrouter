@@ -30,7 +30,7 @@ Some features include:
 
 Follow these steps:
 
-1. Click this link for the [latest compiled script](https://urandom.ca/flexrouter/latest)
+1. Click this link for the [latest compiled script](https://github.com/jerayan/flexrouter/releases/download/v3.0/FlexRouter.3.ksp)
 2. Copy the contents to clipboard (usually ctrl-a followed by ctrl-c)
 3. In your Kontakt instance, click the KSP button in the toolbar (which look like a parchment scroll in earlier Kontakt versions) to open the multiscript pane
 4. Select the desired slot for the script, and click the edit button
@@ -60,9 +60,9 @@ There's also a [walkthrough video](https://www.youtube.com/watch?v=FddWrEwaNmM) 
 
 ## How do I contribute or make my own customizations?
 
-### Reporting bugs
+### Reporting bugs or pull request
 
-Create an account on GitHub and [open an issue](https://github.com/jtackaberry/flexrouter/issues).
+Create an account on GitHub and [open an issue](https://github.com/jerayan/flexrouter/issues) or pull request for improvement (https://github.com/jerayan/flexrouter/pulls).
 
 
 ### Hacking code
