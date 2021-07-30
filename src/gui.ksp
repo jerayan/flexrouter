@@ -294,6 +294,12 @@ macro gui_initialize
     init_label(label_rule_timing, "Timing", 135, y, 55)
     move_and_set_width(value_rule_timing, 200, y, 60)
     set_text(value_rule_timing,"ms ")
+    
+    y := y
+    init_label(label_rule_keyswitch_transpose, "Transpose", 270, y, 55)
+    move_and_set_width(value_rule_keyswitch_transpose, 330, y, 35)
+    value_rule_keyswitch_transpose -> help := "Number of semitones to transpose incoming notes after the keyswitch is triggered."
+    set_text(value_rule_keyswitch_transpose, "")
 
     y := y + 20
     menu_rule_keyswitch_source_channel -> help := "Override the group-default source channel. When this keyswitch is engaged, MIDI events on this channel will be routed to the target channel. Default means use the group default above."
@@ -323,12 +329,6 @@ macro gui_initialize
     set_text(switch_rule_keyswitch_flags_redirect_only, "Ignore routing")
     move_and_set_width(switch_rule_keyswitch_flags_redirect_only, 410, y, 80)
     center(switch_rule_keyswitch_flags_redirect_only)
-
-    y := y + 20
-    init_label(label_rule_keyswitch_transpose, "Transpose", 135, y, 55)
-    move_and_set_width(value_rule_keyswitch_transpose, 200, y, 35)
-    value_rule_keyswitch_transpose -> help := "Number of semitones to transpose incoming notes after the keyswitch is triggered."
-    set_text(value_rule_keyswitch_transpose, "")
 
     y := y + 20
 
