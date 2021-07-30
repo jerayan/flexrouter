@@ -62,7 +62,7 @@ There's also a [walkthrough video](https://www.youtube.com/watch?v=FddWrEwaNmM) 
 
 ### Reporting bugs or pull request
 
-Create an account on GitHub and [open an issue](https://github.com/jerayan/flexrouter/issues) or pull request for improvement (https://github.com/jerayan/flexrouter/pulls).
+Create an account on GitHub and [open an issue](https://github.com/jerayan/flexrouter/issues) or [pull request](https://github.com/jerayan/flexrouter/pulls) for improvement.
 
 
 ### Hacking code
