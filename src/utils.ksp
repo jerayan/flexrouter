@@ -36,7 +36,7 @@ end macro
 
 function debug(msg)
     if DEBUG = 1
-        message("FlexRouter:" & msg)
+        //message("FlexRouter:" & msg)
     end if
 end function
 
