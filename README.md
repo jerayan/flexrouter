@@ -28,7 +28,7 @@ Some features include:
 
 ## How do I install it?
 
-You can open script.ksp file as raw and copy text to multiscript editor in NI Kontakt
+Just click on script.ksp file in github and click on copy raw text icon and paste to multiscript editor in NI Kontakt
 
 ## What kinds of things can I use it for?
 
