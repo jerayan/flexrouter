@@ -28,17 +28,7 @@ Some features include:
 
 ## How do I install it?
 
-Follow these steps:
-
-1. Click this link for the [latest compiled script](https://github.com/jerayan/flexrouter/releases/download/v3.0/FlexRouter.3.ksp)
-2. Copy the contents to clipboard (usually ctrl-a followed by ctrl-c)
-3. In your Kontakt instance, click the KSP button in the toolbar (which look like a parchment scroll in earlier Kontakt versions) to open the multiscript pane
-4. Select the desired slot for the script, and click the edit button
-5. Paste the clipboard contents into the newly opened text edit area (ctrl-v)
-6. Click the Apply button
-7. Click the Edit button again to close the text edit area
-
-
+You can open script.ksp file as raw and copy text to multiscript editor in NI Kontakt
 
 ## What kinds of things can I use it for?
 
