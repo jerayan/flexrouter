@@ -804,7 +804,7 @@ function trigger_keyswitch_for_rule(rule, ks, idx)
                         end if
                     else if evcode < 256
                         // Redirect to program change
-                        set_midi(target, MIDI_COMMAND_PROGRAM_CHANGE, evcode - 128, 0)
+                        set_midi(target, MIDI_COMMAND_PROGRAM_CHANGE, evcode - 129, 0)
                     else
                         // Redirect CC value
                         set_midi(target, MIDI_COMMAND_CC, evcode / 128 - 128, evcode mod 128)
