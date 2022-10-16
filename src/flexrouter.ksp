@@ -2,7 +2,7 @@ import "utils.ksp"
 import "gui.ksp"
 
 on init
-    set_script_title("FlexRouter 3")
+    set_script_title("FlexRouter 3.3")
     declare const DEBUG := 1
     declare const CONFIG_VERSION := 5
 
@@ -67,7 +67,13 @@ on init
     // Timing/Delay feature.
     // v3. Timing
     declare const RULE_TIMING := 6
-
+    // v3.3 First note Timing
+    declare const RULE_TIMING_FIRST_NOTE := 11
+    // v3.2 Range
+    declare const RULE_RANGE_IN := 7
+    declare const RULE_RANGE_OUT := 8
+    declare const RULE_VELOCITYFORCC := 9
+    declare const KEYSWITCH_VELOCITYFORCC := 10
     // When the keyswitch is activated, non-keyswitch MIDI events received on this channel will be
     // redirected to the target channel.   A value of 0 means to use the rule default source,
     // -1 means all channels (omni), otherwise refers to a specific channel starting at 1.
@@ -255,6 +261,9 @@ on init
     // Timing for active notes
     declare active_notes_timing[NUM_SOURCE_CHANNELS * 128] := (0)
 
+    // 1st note Timing for active notes
+    declare active_notes_timing_first_note[NUM_SOURCE_CHANNELS * 128] := (0)
+
     // List of keyswitch notes that are being held.  End of list is -1.  Each entry
     // indicates the note (low 8 bits) and target channel (next 8 bits).
     declare active_keyswitch_notes_list[MAX_RULES * MAX_KEYSWITCHES_PER_RULE * MAX_REDIRECTS_PER_KEYSWITCH] := (-1)
@@ -306,7 +315,17 @@ on init
     declare velocity
     // v3. Timing
     declare timing := 0
+    // v3.3 First note
+    declare timing_first_note := 0
+    // v3.2 Range
+    declare range_in := 0
+    declare range_out := 0
+    declare velocityforcc := 0
+    declare last_note
+    declare index_note := 0
+    declare pressed := 0
     declare dst_midi_byte_1
+    declare %legato_array[2]
 
     // Flag to rebuild maps on next MIDI event.  Normally this was done during init
     // but Kontakt complains about too many iterations.
@@ -329,6 +348,9 @@ on init
     make_persistent(blackholed_sources)
     make_persistent(transpose)
     make_persistent(timing)
+    make_persistent(timing_first_note)
+    //make_persistent(range_in)
+    //make_persistent(range_out)
 
     // Before reading persisted rules, initialize global config and create an initial dummy rule.
     global_config[GLOBAL_CONFIG_VERSION] := CONFIG_VERSION
@@ -345,12 +367,15 @@ on init
     read_persistent_var(rules._keyswitch_config)
     read_persistent_var(rules._keyswitch_redirects)
     read_persistent_var(timing)
+    read_persistent_var(timing_first_note)
+    //read_persistent_var(range_in)
+    //read_persistent_var(range_out)
     read_persistent_var(transpose)
 
     migrate_config()
 
     gui_initialize()
-    message("")
+    //message("")
 end on
 
 function migrate_config
@@ -366,6 +391,7 @@ function migrate_config
                 velocity := rules[rule].keyswitch[ks].config[1]
                 rules[rule].keyswitch[ks].config[RULE_KEYSWITCH_FLAGS] := 0
                 rules[rule].keyswitch[ks].config[RULE_TIMING] := 0
+                rules[rule].keyswitch[ks].config[RULE_TIMING_FIRST_NOTE] := 0
                 rules[rule].keyswitch[ks].velocity._raw := VELOCITY_RANGE_DEFAULT
                 // Initialize redirects
                 for i := 0 to MAX_REDIRECTS_PER_KEYSWITCH - 1
@@ -404,6 +430,7 @@ function migrate_config
             for ks := 0 to MAX_KEYSWITCHES_PER_RULE - 1
                 rules[rule].keyswitch[ks].config[RULE_KEYSWITCH_TRANSPOSE] := 0
                 rules[rule].keyswitch[ks].config[RULE_TIMING] := 0
+                rules[rule].keyswitch[ks].config[RULE_TIMING_FIRST_NOTE] := 0
             end for
         end for
     end if
@@ -426,6 +453,7 @@ function initialize_rule(idx, name)
         rules[idx].keyswitch[i].config[RULE_KEYSWITCH_FLAGS] := 0
         // v3. Timing
         rules[idx].keyswitch[i].config[RULE_TIMING] := 0
+        rules[idx].keyswitch[i].config[RULE_TIMING_FIRST_NOTE] := 0
         rules[idx].keyswitch[i].config[RULE_KEYSWITCH_SOURCE_CHANNEL] := 0
         rules[idx].keyswitch[i].config[RULE_KEYSWITCH_TARGET_CHANNEL] := 0
         for j := 0 to MAX_REDIRECTS_PER_KEYSWITCH - 1
@@ -450,6 +478,7 @@ function copy_rule(src, dst)
         rules[dst].keyswitch[i].config[RULE_KEYSWITCH_ACTION] := rules[src].keyswitch[i].config[RULE_KEYSWITCH_ACTION]
         // v3. Timing
         rules[dst].keyswitch[i].config[RULE_TIMING] := rules[src].keyswitch[i].config[RULE_TIMING]
+        rules[dst].keyswitch[i].config[RULE_TIMING_FIRST_NOTE] := rules[src].keyswitch[i].config[RULE_TIMING_FIRST_NOTE]
         rules[dst].keyswitch[i].config[RULE_KEYSWITCH_SOURCE_CHANNEL] := rules[src].keyswitch[i].config[RULE_KEYSWITCH_SOURCE_CHANNEL]
         rules[dst].keyswitch[i].config[RULE_KEYSWITCH_TARGET_CHANNEL] := rules[src].keyswitch[i].config[RULE_KEYSWITCH_TARGET_CHANNEL]
 
@@ -717,6 +746,10 @@ function trigger_keyswitch_for_rule(rule, ks, idx)
         action := rules[rule].keyswitch[idx].config[RULE_KEYSWITCH_ACTION]
         transpose := rules[rule].keyswitch[idx].config[RULE_KEYSWITCH_TRANSPOSE]
         timing := rules[rule].keyswitch[idx].config[RULE_TIMING]
+        timing_first_note := rules[rule].keyswitch[idx].config[RULE_TIMING_FIRST_NOTE]
+        //range_in := rules[rule].keyswitch[idx].config[RULE_RANGE_IN]
+        //range_out := rules[rule].keyswitch[idx].config[RULE_RANGE_OUT]
+        //velocityforcc := rules[rule].keyswitch[idx].config[RULE_VELOCITYFORCC]
         if flag .and. KEYSWITCH_FLAG_IGNORE_ROUTING = 0
             if source = -1
                 // Source is omni: route all channels to keyswitch target.
@@ -799,22 +832,37 @@ on midi_in
 
     //Timing feature
     active_notes_timing[MIDI_CHANNEL * NUM_SOURCE_CHANNELS + MIDI_BYTE_1] := timing
+    active_notes_timing_first_note[MIDI_CHANNEL * NUM_SOURCE_CHANNELS + MIDI_BYTE_1] := timing_first_note
 
     if need_maps_rebuild = 1
         need_maps_rebuild := 0
         call build_ks_maps
     end if
+
+    if (MIDI_COMMAND = MIDI_COMMAND_NOTE_ON and (MIDI_BYTE_1 # j))
+    last_note := MIDI_BYTE_1
+    end if
+    i := 1
+    %legato_array[0] := i
+    if (MIDI_COMMAND = MIDI_COMMAND_NOTE_OFF and (MIDI_BYTE_1 = last_note))
+    i := 0
+    %legato_array[0] := i
+    end if
+
+//    message (%legato_array[0] & " " & %legato_array[1]) 
+//    if (%legato_array[1] = 0)
+//    ignore_midi
+//    wait((timing * 1000)+1)
+//    end if
+
     if MIDI_COMMAND = MIDI_COMMAND_NOTE_ON and MIDI_BYTE_2 > 0
-        ignore_midi
-        wait((timing * 1000)+1)
         is_note_on_event := 1
     else
-        ignore_midi
-        wait((timing * 1000)+1)
         is_note_on_event := 0
     end if
 
     if MIDI_COMMAND = MIDI_COMMAND_NOTE_ON and MIDI_BYTE_2 = 0 or MIDI_COMMAND = MIDI_COMMAND_NOTE_OFF
+        %legato_array[1] := %legato_array[0]
         is_note_off_event := 1
     else
         is_note_off_event := 0
@@ -865,6 +913,7 @@ on midi_in
             triggered := 0
             ignore_midi
 
+
             // Iterate through all applicable rules and apply target channel to active routes.
             // This isn't as cheap as it might be, although it's not terrible and it's only done
             // on a keyswitch event.
@@ -897,6 +946,7 @@ on midi_in
 
             if triggered = 0
                 // Regenerate the original MIDI event because the velocity was out of range.
+
                 set_midi(target, MIDI_COMMAND, MIDI_BYTE_1, MIDI_BYTE_2)
             end if
             // Track number of currently held keyswitches (for layering)
@@ -910,15 +960,30 @@ on midi_in
             end if
         end if
     else
+
+        // Apply Timing and 1st note timing
+
+        message (%legato_array[0] & " " & %legato_array[1]) 
+
+        if (timing > 0 or timing_first_note > 0)
+        ignore_midi
+          if (%legato_array[1] = 0)
+            wait((timing_first_note * 1000)+1)
+          end if
+            wait((timing * 1000)+1)
+        end if
+
+
         // Non-keyswitch event.  Route to active targets.
         // FIXME: find better names
         offset := MIDI_CHANNEL * 2
         idx := MIDI_CHANNEL * 128 * 2 + MIDI_BYTE_1 * 2
         dst_midi_byte_1 := MIDI_BYTE_1
-
-
+        
+        //message(MIDI_BYTE_1)
         // Prevent note hanging.
         if is_note_off_event = 1
+
 
             // Check to see if the active channels for the given note is different from the active routes
             // for this MIDI channel.  If it is, then send the note off event to those channels.  It's
@@ -933,6 +998,7 @@ on midi_in
             // activating the new keyswitch (transposed differently).  Fixing this properly would require
             // tracking each note-on per transpose amount.  That's annoying enough that we'll probably
             // just live with this edge case.
+            
             j := active_notes_transpose[MIDI_CHANNEL * NUM_SOURCE_CHANNELS + MIDI_BYTE_1]
             if active_notes_routes_bitmap[idx] # active_routes_bitmap[offset] or ...
                active_notes_routes_bitmap[idx + 1] # active_routes_bitmap[offset + 1] or ...
