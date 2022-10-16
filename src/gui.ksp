@@ -68,7 +68,16 @@ macro gui_initialize
     // Timing feature
     // v3. Timing
     declare ui_label $label_rule_timing(1, 1)
-    declare ui_value_edit $value_rule_timing(0, 127, 1)
+    declare ui_value_edit $value_rule_timing(0, 1000, 1)
+
+    // v3.3 1st note Timing
+    declare ui_label $label_rule_timing_first_note(1, 1)
+    declare ui_value_edit $value_rule_timing_first_note(0, 1000, 1)
+
+    // Velocity from CC
+    //declare ui_label $label_rule_velocityforcc(1, 1)
+    //declare ui_value_edit $value_rule_velocityforcc(1, 127, 1)
+    //declare ui_switch $switch_rule_velocityforcc
 
     // Keyswitch source channel
     declare ui_label label_rule_keyswitch_source_channel (1,1)
@@ -83,9 +92,17 @@ macro gui_initialize
     declare ui_switch switch_rule_keyswitch_flags_hold_notes
     declare ui_switch switch_rule_keyswitch_flags_redirect_only
 
-    // Transpoe
+    // Transpose
+    // v1.01 Transpose
     declare ui_label label_rule_keyswitch_transpose (1,1)
     declare ui_value_edit value_rule_keyswitch_transpose (-64, 64, 1)
+
+    // Range
+    // v3.4 alfa Range
+    //declare ui_label label_rule_range_in (1,1)
+    //declare ui_label label_rule_range_out (1,1)
+    //declare ui_value_edit value_rule_range_in (0, 127, VALUE_EDIT_MODE_NOTE_NAMES)
+    //declare ui_value_edit value_rule_range_out (0, 127, VALUE_EDIT_MODE_NOTE_NAMES)
 
     // Keyswitch action menu (block, passthrough, redirect)
     declare ui_label label_rule_keyswitch_action (1,1)
@@ -294,12 +311,37 @@ macro gui_initialize
     init_label(label_rule_timing, "Timing", 135, y, 55)
     move_and_set_width(value_rule_timing, 200, y, 60)
     set_text(value_rule_timing,"ms ")
-    
+
+
+    // 1st note Timing feature
     y := y
-    init_label(label_rule_keyswitch_transpose, "Transpose", 270, y, 55)
-    move_and_set_width(value_rule_keyswitch_transpose, 330, y, 35)
+    value_rule_timing_first_note -> help := "1st note Timing feature"
+    init_label(label_rule_timing_first_note, "1st note timing", 270, y, 75)
+    move_and_set_width(value_rule_timing_first_note, 350, y, 60)
+    set_text(value_rule_timing_first_note,"ms ")
+
+    y := y + 20
+    init_label(label_rule_keyswitch_transpose, "Transpose", 135, y, 55)
+    move_and_set_width(value_rule_keyswitch_transpose, 200, y, 60)
     value_rule_keyswitch_transpose -> help := "Number of semitones to transpose incoming notes after the keyswitch is triggered."
     set_text(value_rule_keyswitch_transpose, "")
+    //init_label(label_rule_range_in, "from note", 270, y, 75)
+    //move_and_set_width(value_rule_range_in, 350, y, 45)
+    //set_text(value_rule_range_in, "")
+    //init_label(label_rule_range_out, "to ", 400, y, 25)
+    //move_and_set_width(value_rule_range_out, 430, y, 45)
+    //set_text(value_rule_range_out, "")
+
+    // Velocity from CC feature
+    //y := y + 20
+    //value_rule_velocityforcc -> help := "Velocity from CC feature"
+    //init_label(label_rule_velocityforcc, "Velocity from CC", 95, y, 95)
+    //move_and_set_width(value_rule_velocityforcc, 200, y, 40)
+    //set_text(value_rule_velocityforcc,"")
+    //switch_rule_velocityforcc -> help := "Velocity from CC feature"
+    //set_text(switch_rule_velocityforcc, "On")
+    //move_and_set_width(switch_rule_velocityforcc, 235, y, 30)
+    //center(switch_rule_velocityforcc)
 
     y := y + 20
     menu_rule_keyswitch_source_channel -> help := "Override the group-default source channel. When this keyswitch is engaged, MIDI events on this channel will be routed to the target channel. Default means use the group default above."
@@ -309,10 +351,10 @@ macro gui_initialize
     add_menu_item(menu_rule_keyswitch_source_channel, "Omni", -1)
     init_channel_menu(menu_rule_keyswitch_source_channel, 16)
 
-    y := y + 20
+    y := y
     menu_rule_keyswitch_target_channel -> help := "Override the group-default target channel. When this keyswitch is engaged, MIDI events will be routed to this channel.  Null is a special case which blackholes all incoming MIDI events on the source channel when this keyswitch is active."
-    init_label(label_rule_keyswitch_target_channel, "Target", 135, y, 55)
-    move_and_set_width(menu_rule_keyswitch_target_channel, 200, y, 60)
+    init_label(label_rule_keyswitch_target_channel, "Target", 270, y, 41)
+    move_and_set_width(menu_rule_keyswitch_target_channel, 315, y, 60)
     add_menu_item(menu_rule_keyswitch_target_channel, "Default", 0)
     add_menu_item(menu_rule_keyswitch_target_channel, "Null", -1)
     init_channel_menu(menu_rule_keyswitch_target_channel, 64)
@@ -546,6 +588,15 @@ function gui_set_keyswitch_section_visibility(rule, idx, ks, action)
     label_rule_keyswitch_flags -> hide := params[0]
     label_rule_timing -> hide := params[0]
     value_rule_timing -> hide := params[0]
+    label_rule_timing_first_note -> hide := params[0]
+    value_rule_timing_first_note -> hide := params[0]
+    //label_rule_range_in -> hide := params[0]
+    //value_rule_range_in -> hide := params[0]
+    //label_rule_range_out -> hide := params[0]
+    //value_rule_range_out -> hide := params[0]
+    //label_rule_velocityforcc -> hide := params[0]
+    //value_rule_velocityforcc -> hide := params[0]
+    //switch_rule_velocityforcc -> hide := params[4]
     switch_rule_keyswitch_flags_hold_notes -> hide := params[4]
     switch_rule_keyswitch_flags_redirect_only -> hide := params[4]
     label_rule_keyswitch_transpose -> hide := params[0]
@@ -646,6 +697,11 @@ function gui_update_for_selected_keyswitch()
             menu_rule_keyswitch_target_channel := rules[rule].keyswitch[idx].config[RULE_KEYSWITCH_TARGET_CHANNEL]
             value_rule_keyswitch_transpose := rules[rule].keyswitch[idx].config[RULE_KEYSWITCH_TRANSPOSE]
             value_rule_timing := rules[rule].keyswitch[idx].config[RULE_TIMING]
+            value_rule_timing_first_note := rules[rule].keyswitch[idx].config[RULE_TIMING_FIRST_NOTE]
+            //value_rule_range_in := rules[rule].keyswitch[idx].config[RULE_RANGE_IN]
+            //value_rule_range_out := rules[rule].keyswitch[idx].config[RULE_RANGE_OUT]
+            //value_rule_velocityforcc := rules[rule].keyswitch[idx].config[RULE_VELOCITYFORCC]
+            //switch_rule_velocityforcc := rules[rule].keyswitch[idx].config[KEYSWITCH_VELOCITYFORCC]
             switch_rule_keyswitch_flags_hold_notes := flag .and. KEYSWITCH_FLAG_HOLD_NOTES
             switch_rule_keyswitch_flags_redirect_only := flag .and. KEYSWITCH_FLAG_IGNORE_ROUTING
         end if
@@ -705,7 +761,7 @@ function gui_clear_active_routes_for_all_channels()
     for j := 0 to NUM_SOURCE_CHANNELS - 1
         clear_active_routes_for_channel(j)
     end for
-    message("Active keyswitches cleared due to rule change.  Keyswitches must be retriggered.")
+    //message("Active keyswitches cleared due to rule change.  Keyswitches must be retriggered.")
 end function
 
 
@@ -767,6 +823,11 @@ function gui_append_keyswitch_to_selected_rule
                 rules[rule].keyswitch[count].config[RULE_KEYSWITCH_TARGET_CHANNEL] := rules[rule].keyswitch[idx].config[RULE_KEYSWITCH_TARGET_CHANNEL]
                 rules[rule].keyswitch[count].config[RULE_KEYSWITCH_TRANSPOSE] := rules[rule].keyswitch[idx].config[RULE_KEYSWITCH_TRANSPOSE]
                 rules[rule].keyswitch[count].config[RULE_TIMING] := rules[rule].keyswitch[idx].config[RULE_TIMING]
+                rules[rule].keyswitch[count].config[RULE_TIMING_FIRST_NOTE] := rules[rule].keyswitch[idx].config[RULE_TIMING_FIRST_NOTE]
+                rules[rule].keyswitch[count].config[RULE_VELOCITYFORCC] := rules[rule].keyswitch[idx].config[RULE_VELOCITYFORCC]
+                rules[rule].keyswitch[count].config[RULE_RANGE_IN] := rules[rule].keyswitch[idx].config[RULE_RANGE_IN]
+                rules[rule].keyswitch[count].config[RULE_RANGE_OUT] := rules[rule].keyswitch[idx].config[RULE_RANGE_OUT]
+                rules[rule].keyswitch[count].config[KEYSWITCH_VELOCITYFORCC] := rules[rule].keyswitch[idx].config[KEYSWITCH_VELOCITYFORCC]
 
                 // If the currently selected keyswitch we're cloning is a redirect and the Learn++
                 // button was pressed, rather than cloning the redirect config directly, measure the
@@ -802,6 +863,11 @@ function gui_append_keyswitch_to_selected_rule
                 rules[rule].keyswitch[count].config[RULE_KEYSWITCH_TARGET_CHANNEL] := 0
                 rules[rule].keyswitch[count].config[RULE_KEYSWITCH_TRANSPOSE] := 0
                 rules[rule].keyswitch[count].config[RULE_TIMING] := 0
+                rules[rule].keyswitch[count].config[RULE_TIMING_FIRST_NOTE] := 0
+                rules[rule].keyswitch[count].config[RULE_RANGE_IN] := 0
+                rules[rule].keyswitch[count].config[RULE_RANGE_OUT] := 0
+                rules[rule].keyswitch[count].config[RULE_VELOCITYFORCC] := 0
+                rules[rule].keyswitch[count].config[KEYSWITCH_VELOCITYFORCC] := 0
 
                 for i := 0 to MAX_REDIRECTS_PER_KEYSWITCH - 1
                     rules[rule].keyswitch[count].redirects[i].evcode := KEYSWITCH_UNDEFINED
@@ -1059,6 +1125,7 @@ on ui_control(button_rule_clone)
         else
             copy_rule(rule, idx)
             rules[idx].name := rules[rule].name & " +"
+
             set_menu_item_str(get_ui_id(menu_rules), idx, rules[idx].name)
             set_menu_item_visibility(get_ui_id(menu_rules), idx, 1)
             menu_rules := idx
@@ -1291,6 +1358,31 @@ end on
 on ui_control(value_rule_timing)
     gui_set_selected_keyswitch_config(RULE_TIMING, value_rule_timing)
 end on
+
+// 1st note timing
+on ui_control(value_rule_timing_first_note)
+    gui_set_selected_keyswitch_config(RULE_TIMING_FIRST_NOTE, value_rule_timing_first_note)
+end on
+
+// Keyswitch value_rule_velocityforcc changed
+//on ui_control(value_rule_velocityforcc)
+//   gui_set_selected_keyswitch_config(RULE_VELOCITYFORCC, value_rule_velocityforcc)
+//end on
+
+// Keyswitch range_in changed
+//on ui_control(value_rule_range_in)
+//    gui_set_selected_keyswitch_config(RULE_RANGE_IN, value_rule_range_in)
+//end on
+
+// Keyswitch range_out changed
+//on ui_control(value_rule_range_out)
+//    gui_set_selected_keyswitch_config(RULE_RANGE_OUT, value_rule_range_out)
+//end on
+
+// Velocity_CC ignoring changed
+//on ui_control(switch_rule_velocityforcc)
+//    gui_set_selected_keyswitch_config(KEYSWITCH_VELOCITYFORCC, switch_rule_velocityforcc)
+//end on
 
 // Keyswitch action menu (block, passthrough, redirect) changed
 on ui_control(menu_rule_keyswitch_action)
