@@ -50,7 +50,7 @@ function get_keyswitch_name(ks, range) -> name
             name := name & "   vel " & (range .and. 0xff) & "-" & (sh_right(range, 8) .and. 0xff)
         end if
     else if ks < 256
-        name := "Prog " & (ks mod 128)
+        name := "Prog " & (ks mod 127)
     else
         name := "CC" & (ks / 128 - 128) & " / " & (range .and. 0xff)
         if (range .and. 0xff) # (sh_right(range, 8) .and. 0xff)
