@@ -1,3 +1,9 @@
+{***********************************************
+FlexRouter 3.3
+Author: Native Instruments
+Written by: Jason Tackaberry, Dominik Svoboda
+Modified: October 16, 2022
+*************************************************}
 // Called during script initialization
 macro utils_initialize
     declare !notes[12]
