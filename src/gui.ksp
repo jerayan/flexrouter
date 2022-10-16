@@ -63,7 +63,7 @@ macro gui_initialize
     declare ui_label label_rule_keyswitch_cc_value_range_to (1,1)
     declare ui_value_edit value_rule_keyswitch_cc_value_range_max (0, 127, 1)
     // Program controls (when redirect type is set to Progran Change)
-    declare ui_value_edit value_rule_keyswitch_program (0, 127, 1)
+    declare ui_value_edit value_rule_keyswitch_program (1, 128, 1)
 
     // Timing feature
     // v3. Timing
@@ -128,7 +128,7 @@ macro gui_initialize
     declare ui_value_edit value_rule_keyswitch_redirect_cc_value[MAX_GUI_REDIRECTS_PER_KEYSWITCH] (0, 127, 1)
 
     // Program redirect controls (when redirect type is set to Progran Change)
-    declare ui_value_edit value_rule_keyswitch_redirect_program[MAX_GUI_REDIRECTS_PER_KEYSWITCH] (0, 127, 1)
+    declare ui_value_edit value_rule_keyswitch_redirect_program[MAX_GUI_REDIRECTS_PER_KEYSWITCH] (1, 128, 1)
 
 
     // Keyswitch MIDI Learn button
@@ -713,7 +713,7 @@ function gui_update_for_selected_keyswitch()
             value_rule_keyswitch_key := ks
         else if ks < 256
             menu_rule_keyswitch_type := 2
-            value_rule_keyswitch_program := ks - 128
+            value_rule_keyswitch_program := ks - 127
         else if ks # KEYSWITCH_UNDEFINED
             menu_rule_keyswitch_type := 1
             value_rule_keyswitch_cc := ks / 128 - 128
@@ -982,7 +982,7 @@ function gui_set_selected_keyswitch_from_ui
         end if
     else if menu_rule_keyswitch_type = 2
         // Program
-        evcode := 128 + value_rule_keyswitch_program
+        evcode := 127 + value_rule_keyswitch_program
         if ks # evcode
             flag := 1
             rules[rule].keyswitch[idx].evcode := evcode
