@@ -1,6 +1,9 @@
-# What is new in FlexRouter 3.3
+# What is new in FlexRouter 3
 
-*Timing (first note in legato & whole pasage) & Transpose feature*
+Timing (first note in legato & whole pasage) & Transpose feature
+
+*Version 3.3 contains some updates in timing feature, program number starts from 1 (not from 0)
+and 1st note timing feature is ready.*
 
 
 ## What is it?
