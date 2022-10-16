@@ -1,10 +1,10 @@
-
 {***********************************************
 FlexRouter 3.3
 Author: Native Instruments
 Written by: Jason Tackaberry, Dominik Svoboda
 Modified: October 16, 2022
 *************************************************}
+
 on init
 declare $concat_it
 declare $concat_offset
@@ -385,7 +385,7 @@ declare ui_label $label_rule_keyswitch_cc_value_range_from(1,1)
 declare ui_value_edit $value_rule_keyswitch_cc_value_range_min(0,127,1)
 declare ui_label $label_rule_keyswitch_cc_value_range_to(1,1)
 declare ui_value_edit $value_rule_keyswitch_cc_value_range_max(0,127,1)
-declare ui_value_edit $value_rule_keyswitch_program(0,127,1)
+declare ui_value_edit $value_rule_keyswitch_program(1,128,1)
 declare ui_label $label_rule_timing(1,1)
 declare ui_value_edit $value_rule_timing(0,1000,1)
 declare ui_label $label_rule_timing_first_note(1,1)
@@ -483,10 +483,10 @@ while ($preproc_i<=3)
 inc($preproc_i)
 end while
 declare %value_rule_keyswitch_redirect_program[4]
-declare ui_value_edit $value_rule_keyswitch_redirect_program0(0,127,1)
-declare ui_value_edit $value_rule_keyswitch_redirect_program1(0,127,1)
-declare ui_value_edit $value_rule_keyswitch_redirect_program2(0,127,1)
-declare ui_value_edit $value_rule_keyswitch_redirect_program3(0,127,1)
+declare ui_value_edit $value_rule_keyswitch_redirect_program0(1,128,1)
+declare ui_value_edit $value_rule_keyswitch_redirect_program1(1,128,1)
+declare ui_value_edit $value_rule_keyswitch_redirect_program2(1,128,1)
+declare ui_value_edit $value_rule_keyswitch_redirect_program3(1,128,1)
 $preproc_i := 0
 while ($preproc_i<=3)
 %value_rule_keyswitch_redirect_program[$preproc_i] := get_ui_id($value_rule_keyswitch_redirect_program0)+$preproc_i
@@ -1117,7 +1117,7 @@ if (%rules___keyswitch_config[$rule*$MAX_KEYSWITCHES_PER_RULE*$MAX_CONFIG_PER_KE
 end if
 else
 if ($ks<256)
-@name := "Prog " & ($ks mod 128)
+@name := "Prog " & ($ks mod 127)
 else
 @name := "CC" & ($ks/128-128) & " / " & (%rules___keyswitch_config[$rule*$MAX_KEYSWITCHES_PER_RULE*$MAX_CONFIG_PER_KEYSWITCH+($i*$MAX_CONFIG_PER_KEYSWITCH)+$RULE_KEYSWITCH_VELOCITY_RANGE] .and. 255)
 if (%rules___keyswitch_config[$rule*$MAX_KEYSWITCHES_PER_RULE*$MAX_CONFIG_PER_KEYSWITCH+($i*$MAX_CONFIG_PER_KEYSWITCH)+$RULE_KEYSWITCH_VELOCITY_RANGE] .and. 255 # (sh_right(%rules___keyswitch_config[$rule*$MAX_KEYSWITCHES_PER_RULE*$MAX_CONFIG_PER_KEYSWITCH+($i*$MAX_CONFIG_PER_KEYSWITCH)+$RULE_KEYSWITCH_VELOCITY_RANGE],8) .and. 255))
@@ -1265,7 +1265,7 @@ $value_rule_keyswitch_key := $ks
 else
 if ($ks<256)
 $menu_rule_keyswitch_type := 2
-$value_rule_keyswitch_program := $ks-128
+$value_rule_keyswitch_program := $ks-127
 else
 if ($ks # $KEYSWITCH_UNDEFINED)
 $menu_rule_keyswitch_type := 1
@@ -1581,7 +1581,7 @@ $value_rule_keyswitch_key := $ks
 else
 if ($ks<256)
 $menu_rule_keyswitch_type := 2
-$value_rule_keyswitch_program := $ks-128
+$value_rule_keyswitch_program := $ks-127
 else
 if ($ks # $KEYSWITCH_UNDEFINED)
 $menu_rule_keyswitch_type := 1
@@ -1790,7 +1790,7 @@ if (%rules___keyswitch_config[$rule*$MAX_KEYSWITCHES_PER_RULE*$MAX_CONFIG_PER_KE
 end if
 else
 if ($ks<256)
-@name := "Prog " & ($ks mod 128)
+@name := "Prog " & ($ks mod 127)
 else
 @name := "CC" & ($ks/128-128) & " / " & (%rules___keyswitch_config[$rule*$MAX_KEYSWITCHES_PER_RULE*$MAX_CONFIG_PER_KEYSWITCH+($i*$MAX_CONFIG_PER_KEYSWITCH)+$RULE_KEYSWITCH_VELOCITY_RANGE] .and. 255)
 if (%rules___keyswitch_config[$rule*$MAX_KEYSWITCHES_PER_RULE*$MAX_CONFIG_PER_KEYSWITCH+($i*$MAX_CONFIG_PER_KEYSWITCH)+$RULE_KEYSWITCH_VELOCITY_RANGE] .and. 255 # (sh_right(%rules___keyswitch_config[$rule*$MAX_KEYSWITCHES_PER_RULE*$MAX_CONFIG_PER_KEYSWITCH+($i*$MAX_CONFIG_PER_KEYSWITCH)+$RULE_KEYSWITCH_VELOCITY_RANGE],8) .and. 255))
@@ -1937,7 +1937,7 @@ $value_rule_keyswitch_key := $ks
 else
 if ($ks<256)
 $menu_rule_keyswitch_type := 2
-$value_rule_keyswitch_program := $ks-128
+$value_rule_keyswitch_program := $ks-127
 else
 if ($ks # $KEYSWITCH_UNDEFINED)
 $menu_rule_keyswitch_type := 1
@@ -2156,7 +2156,7 @@ if (%rules___keyswitch_config[$rule*$MAX_KEYSWITCHES_PER_RULE*$MAX_CONFIG_PER_KE
 end if
 else
 if ($ks<256)
-@name := "Prog " & ($ks mod 128)
+@name := "Prog " & ($ks mod 127)
 else
 @name := "CC" & ($ks/128-128) & " / " & (%rules___keyswitch_config[$rule*$MAX_KEYSWITCHES_PER_RULE*$MAX_CONFIG_PER_KEYSWITCH+($idx*$MAX_CONFIG_PER_KEYSWITCH)+$RULE_KEYSWITCH_VELOCITY_RANGE] .and. 255)
 if (%rules___keyswitch_config[$rule*$MAX_KEYSWITCHES_PER_RULE*$MAX_CONFIG_PER_KEYSWITCH+($idx*$MAX_CONFIG_PER_KEYSWITCH)+$RULE_KEYSWITCH_VELOCITY_RANGE] .and. 255 # (sh_right(%rules___keyswitch_config[$rule*$MAX_KEYSWITCHES_PER_RULE*$MAX_CONFIG_PER_KEYSWITCH+($idx*$MAX_CONFIG_PER_KEYSWITCH)+$RULE_KEYSWITCH_VELOCITY_RANGE],8) .and. 255))
@@ -2189,7 +2189,7 @@ $flag := 1
 end if
 else
 if ($menu_rule_keyswitch_type=2)
-$evcode := 128+$value_rule_keyswitch_program
+$evcode := 127+$value_rule_keyswitch_program
 if ($ks # $evcode)
 $flag := 1
 %rules___keyswitches[$rule*$MAX_KEYSWITCHES_PER_RULE+$idx] := $evcode
@@ -2317,7 +2317,7 @@ if ($velocity # $VELOCITY_RANGE_DEFAULT)
 end if
 else
 if ($ks<256)
-@name := "Prog " & ($ks mod 128)
+@name := "Prog " & ($ks mod 127)
 else
 @name := "CC" & ($ks/128-128) & " / " & ($velocity .and. 255)
 if ($velocity .and. 255 # (sh_right($velocity,8) .and. 255))
@@ -2893,7 +2893,7 @@ if (%rules___keyswitch_config[$rule*$MAX_KEYSWITCHES_PER_RULE*$MAX_CONFIG_PER_KE
 end if
 else
 if (%rules___keyswitches[$rule*$MAX_KEYSWITCHES_PER_RULE+$source]<256)
-@name := "Prog " & (%rules___keyswitches[$rule*$MAX_KEYSWITCHES_PER_RULE+$source] mod 128)
+@name := "Prog " & (%rules___keyswitches[$rule*$MAX_KEYSWITCHES_PER_RULE+$source] mod 127)
 else
 @name := "CC" & (%rules___keyswitches[$rule*$MAX_KEYSWITCHES_PER_RULE+$source]/128-128) & " / " & (%rules___keyswitch_config[$rule*$MAX_KEYSWITCHES_PER_RULE*$MAX_CONFIG_PER_KEYSWITCH+($source*$MAX_CONFIG_PER_KEYSWITCH)+$RULE_KEYSWITCH_VELOCITY_RANGE] .and. 255)
 if (%rules___keyswitch_config[$rule*$MAX_KEYSWITCHES_PER_RULE*$MAX_CONFIG_PER_KEYSWITCH+($source*$MAX_CONFIG_PER_KEYSWITCH)+$RULE_KEYSWITCH_VELOCITY_RANGE] .and. 255 # (sh_right(%rules___keyswitch_config[$rule*$MAX_KEYSWITCHES_PER_RULE*$MAX_CONFIG_PER_KEYSWITCH+($source*$MAX_CONFIG_PER_KEYSWITCH)+$RULE_KEYSWITCH_VELOCITY_RANGE],8) .and. 255))
@@ -3163,7 +3163,7 @@ if ($MIDI_BYTE_2+sh_left($MIDI_BYTE_2,8) # $VELOCITY_RANGE_DEFAULT)
 end if
 else
 if ($ks<256)
-@name := "Prog " & ($ks mod 128)
+@name := "Prog " & ($ks mod 127)
 else
 @name := "CC" & ($ks/128-128) & " / " & ($MIDI_BYTE_2+sh_left($MIDI_BYTE_2,8) .and. 255)
 if ($MIDI_BYTE_2+sh_left($MIDI_BYTE_2,8) .and. 255 # (sh_right($MIDI_BYTE_2+sh_left($MIDI_BYTE_2,8),8) .and. 255))
@@ -3349,7 +3349,7 @@ set_midi($target,$MIDI_COMMAND_NOTE_ON,$evcode,0)
 end if
 else
 if ($evcode<256)
-set_midi($target,$MIDI_COMMAND_PROGRAM_CHANGE,$evcode-128,0)
+set_midi($target,$MIDI_COMMAND_PROGRAM_CHANGE,$evcode-129,0)
 else
 set_midi($target,$MIDI_COMMAND_CC,$evcode/128-128,$evcode mod 128)
 end if
