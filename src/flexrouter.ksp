@@ -1,3 +1,4 @@
+
 import "utils.ksp"
 import "gui.ksp"
 
@@ -89,7 +90,7 @@ on init
     declare const RULE_KEYSWITCH_VELOCITY_RANGE := 4
 
     // Number of semitones to transpose incoming notes when the keyswitch is activated.
-    declare const RULE_KEYSWITCH_TRANSPOSE := 5
+    declare const RULE_KEYSWITCH_TRANSPOSE := 22
 
     declare const VELOCITY_RANGE_DEFAULT := 0x7f00 // 0-127
 
