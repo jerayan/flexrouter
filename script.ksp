@@ -5,7 +5,7 @@ Written by: Jason Tackaberry, Dominik Svoboda
 Modified: October 16, 2022
 *************************************************}
 
-{ Compiled on Tue Oct 18 23:11:00 2022 }
+{ Compiled on Tue Oct 18 23:43:48 2022 }
 on init
 declare $concat_it
 declare $concat_offset
@@ -40,15 +40,15 @@ declare const $RULE_KEYSWITCH_FLAGS := 1
 declare const $KEYSWITCH_FLAG_HOLD_NOTES := 1
 declare const $KEYSWITCH_FLAG_IGNORE_ROUTING := 2
 declare const $RULE_TIMING := 6
-declare const $RULE_TIMING_FIRST_NOTE := 11
-declare const $RULE_RANGE_IN := 7
-declare const $RULE_RANGE_OUT := 8
-declare const $RULE_VELOCITYFORCC := 9
-declare const $KEYSWITCH_VELOCITYFORCC := 10
+declare const $RULE_TIMING_FIRST_NOTE := 5
+declare const $RULE_RANGE_IN := 8
+declare const $RULE_RANGE_OUT := 9
+declare const $RULE_VELOCITYFORCC := 10
+declare const $KEYSWITCH_VELOCITYFORCC := 11
 declare const $RULE_KEYSWITCH_SOURCE_CHANNEL := 2
 declare const $RULE_KEYSWITCH_TARGET_CHANNEL := 3
 declare const $RULE_KEYSWITCH_VELOCITY_RANGE := 4
-declare const $RULE_KEYSWITCH_TRANSPOSE := 100
+declare const $RULE_KEYSWITCH_TRANSPOSE := 70
 declare const $VELOCITY_RANGE_DEFAULT := 32512
 declare !rules___name[$MAX_RULES]
 declare %rules___config[$MAX_RULES*$MAX_CONFIG_PER_RULE] := (0)
