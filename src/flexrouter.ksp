@@ -90,7 +90,7 @@ on init
     declare const RULE_KEYSWITCH_VELOCITY_RANGE := 4
 
     // Number of semitones to transpose incoming notes when the keyswitch is activated.
-    declare const RULE_KEYSWITCH_TRANSPOSE := 22
+    declare const RULE_KEYSWITCH_TRANSPOSE := 100
 
     declare const VELOCITY_RANGE_DEFAULT := 0x7f00 // 0-127
 
@@ -964,7 +964,7 @@ on midi_in
 
         // Apply Timing and 1st note timing
 
-        message (%legato_array[0] & " " & %legato_array[1]) 
+        //message (%legato_array[0] & " " & %legato_array[1]) 
 
         if (timing > 0 or timing_first_note > 0)
         ignore_midi
