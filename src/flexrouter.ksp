@@ -69,12 +69,12 @@ on init
     // v3. Timing
     declare const RULE_TIMING := 6
     // v3.3 First note Timing
-    declare const RULE_TIMING_FIRST_NOTE := 11
+    declare const RULE_TIMING_FIRST_NOTE := 5
     // v3.2 Range
-    declare const RULE_RANGE_IN := 7
-    declare const RULE_RANGE_OUT := 8
-    declare const RULE_VELOCITYFORCC := 9
-    declare const KEYSWITCH_VELOCITYFORCC := 10
+    declare const RULE_RANGE_IN := 8
+    declare const RULE_RANGE_OUT := 9
+    declare const RULE_VELOCITYFORCC := 10
+    declare const KEYSWITCH_VELOCITYFORCC := 11
     // When the keyswitch is activated, non-keyswitch MIDI events received on this channel will be
     // redirected to the target channel.   A value of 0 means to use the rule default source,
     // -1 means all channels (omni), otherwise refers to a specific channel starting at 1.
@@ -90,7 +90,7 @@ on init
     declare const RULE_KEYSWITCH_VELOCITY_RANGE := 4
 
     // Number of semitones to transpose incoming notes when the keyswitch is activated.
-    declare const RULE_KEYSWITCH_TRANSPOSE := 100
+    declare const RULE_KEYSWITCH_TRANSPOSE := 70
 
     declare const VELOCITY_RANGE_DEFAULT := 0x7f00 // 0-127
 
