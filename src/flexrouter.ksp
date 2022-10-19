@@ -69,7 +69,7 @@ on init
     // v3. Timing
     declare const RULE_TIMING := 6
     // v3.3 First note Timing
-    declare const RULE_TIMING_FIRST_NOTE := 5
+    declare const RULE_TIMING_FIRST_NOTE := 50
     // v3.2 Range
     declare const RULE_RANGE_IN := 8
     declare const RULE_RANGE_OUT := 9
@@ -831,9 +831,6 @@ end function
 
 on midi_in
 
-    //Timing feature
-    active_notes_timing[MIDI_CHANNEL * NUM_SOURCE_CHANNELS + MIDI_BYTE_1] := timing
-    active_notes_timing_first_note[MIDI_CHANNEL * NUM_SOURCE_CHANNELS + MIDI_BYTE_1] := timing_first_note
 
     if need_maps_rebuild = 1
         need_maps_rebuild := 0
@@ -849,12 +846,6 @@ on midi_in
     i := 0
     %legato_array[0] := i
     end if
-
-//    message (%legato_array[0] & " " & %legato_array[1]) 
-//    if (%legato_array[1] = 0)
-//    ignore_midi
-//    wait((timing * 1000)+1)
-//    end if
 
     if MIDI_COMMAND = MIDI_COMMAND_NOTE_ON and MIDI_BYTE_2 > 0
         is_note_on_event := 1
@@ -899,6 +890,7 @@ on midi_in
         if is_note_on_event = 1 or MIDI_COMMAND = MIDI_COMMAND_CC or MIDI_COMMAND = MIDI_COMMAND_PROGRAM_CHANGE
             gui_set_selected_keyswitch_redirect(ks, MIDI_BYTE_2)
         end if
+
 
     else if ks # KEYSWITCH_UNDEFINED and ks_to_keyswitch_channels[ks] .and. sh_left(1, MIDI_CHANNEL) # 0
         // Event is a configured key/CC switch for the source MIDI channel.
@@ -962,6 +954,10 @@ on midi_in
         end if
     else
 
+                //Timing feature
+    active_notes_timing[MIDI_CHANNEL * NUM_SOURCE_CHANNELS + MIDI_BYTE_1] := timing
+    active_notes_timing_first_note[MIDI_CHANNEL * NUM_SOURCE_CHANNELS + MIDI_BYTE_1] := timing_first_note
+
         // Apply Timing and 1st note timing
 
         //message (%legato_array[0] & " " & %legato_array[1]) 
@@ -973,7 +969,6 @@ on midi_in
           end if
             wait((timing * 1000)+1)
         end if
-
 
         // Non-keyswitch event.  Route to active targets.
         // FIXME: find better names
