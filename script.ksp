@@ -5,7 +5,7 @@ Written by: Jason Tackaberry, Dominik Svoboda
 Modified: October 18, 2022
 *************************************************}
 
-{ Compiled on Tue Oct 18 23:43:48 2022 }
+{ Compiled on Wed Oct 19 09:55:43 2022 }
 on init
 declare $concat_it
 declare $concat_offset
@@ -40,7 +40,7 @@ declare const $RULE_KEYSWITCH_FLAGS := 1
 declare const $KEYSWITCH_FLAG_HOLD_NOTES := 1
 declare const $KEYSWITCH_FLAG_IGNORE_ROUTING := 2
 declare const $RULE_TIMING := 6
-declare const $RULE_TIMING_FIRST_NOTE := 5
+declare const $RULE_TIMING_FIRST_NOTE := 50
 declare const $RULE_RANGE_IN := 8
 declare const $RULE_RANGE_OUT := 9
 declare const $RULE_VELOCITYFORCC := 10
@@ -3087,8 +3087,6 @@ end if
 %rules___keyswitch_config[$rule*$MAX_KEYSWITCHES_PER_RULE*$MAX_CONFIG_PER_KEYSWITCH+($idx*$MAX_CONFIG_PER_KEYSWITCH)+$RULE_KEYSWITCH_FLAGS] := $value
 end on
 on midi_in
-%active_notes_timing[$MIDI_CHANNEL*$NUM_SOURCE_CHANNELS+$MIDI_BYTE_1] := $timing
-%active_notes_timing_first_note[$MIDI_CHANNEL*$NUM_SOURCE_CHANNELS+$MIDI_BYTE_1] := $timing_first_note
 if ($need_maps_rebuild=1)
 $need_maps_rebuild := 0
 call build_ks_maps
@@ -3396,6 +3394,8 @@ end if
 end if
 end if
 else
+%active_notes_timing[$MIDI_CHANNEL*$NUM_SOURCE_CHANNELS+$MIDI_BYTE_1] := $timing
+%active_notes_timing_first_note[$MIDI_CHANNEL*$NUM_SOURCE_CHANNELS+$MIDI_BYTE_1] := $timing_first_note
 if ($timing>0 or ($timing_first_note>0))
 ignore_midi
 if (%legato_array[1]=0)
@@ -3827,3 +3827,4 @@ $button_rule_keyswitch_redirect_midi_learn3 := 1
 $keyswitch_redirect_midi_learn_index := 3
 end if
 end on
+
