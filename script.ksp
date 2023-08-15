@@ -3602,6 +3602,7 @@ on midi_in
               inc($rule)
             end while
             if ($triggered=0)
+              set_midi($target,$MIDI_COMMAND,$MIDI_BYTE_1,$MIDI_BYTE_2)
             end if
             if ($is_note_on_event=1)
               inc($num_ks_down)
@@ -3616,6 +3617,7 @@ on midi_in
         else
           $offset := $MIDI_CHANNEL*2
           $idx := $MIDI_CHANNEL*128*2+($MIDI_BYTE_1*2)
+          $dst_midi_byte_1 := $MIDI_BYTE_1
           if ($MIDI_COMMAND=$MIDI_COMMAND_CC)
             %last_cc_values_by_source[$MIDI_CHANNEL*$NUM_SOURCE_CHANNELS+$MIDI_BYTE_1] := $MIDI_BYTE_2
             %last_cc_values[$MIDI_BYTE_1] := $MIDI_BYTE_2 .or. sh_left($MIDI_CHANNEL,8)
