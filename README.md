@@ -1,6 +1,6 @@
 # What is new in FlexRouter 3
 
-Timing (first note in legato & whole pasage) & Transpose feature
+Timing, Transposing & Velocity to CC features
 
 *Version 3.5 contains huge updates in timing feature that properly distributes timing across all channels, there is new transpose, note range and velocity to CC features, that enables lot more fun, also program number starts from 1 (not from 0) .*
 
