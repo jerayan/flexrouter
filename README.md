@@ -2,15 +2,14 @@
 
 Timing (first note in legato & whole pasage) & Transpose feature
 
-*Version 3.3 contains some updates in timing feature, program number starts from 1 (not from 0)
-and 1st note timing feature is ready.*
+*Version 3.5 contains huge updates in timing feature that properly distributes timing across all channels, there is new transpose, note range and velocity to CC features, that enables lot more fun, also program number starts from 1 (not from 0) .*
 
 
 ## What is it?
 
 FlexRouter is a highly customizable Kontakt 5 Multiscript from [Jason Tackaberry](https://github.com/jtackaberry/flexrouter) designed for managing and unifying keyswitches across instruments from many different developers.
 
-![](https://dominiksvoboda.com/wp-content/uploads/2022/10/dominiksvoboda.com-dominiksvoboda.com-flexrouter3.png.png)
+![](https://dominiksvoboda.com/wp-content/uploads/2023/08/dominiksvoboda.com-snimek-obrazovky-2023-08-15-v-21.53.40.png)
 
 Some features include:
 
@@ -26,6 +25,10 @@ Some features include:
 * each rule supports up to 128 independently configured keyswitches
 * Optional anti-hanging for notes and sustain pedal when jumping between keyswitches
 * Optional CC chasing per rule
+* Timing feature
+* Note Range feature
+* Transposing feature
+* Velocity to CC feature
 * probably a few bugs :)
 
 
