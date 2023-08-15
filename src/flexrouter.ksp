@@ -1025,7 +1025,7 @@ on midi_in
             if triggered = 0
                 // Regenerate the original MIDI event because the velocity was out of range.
 
-                //set_midi(target, MIDI_COMMAND, MIDI_BYTE_1, MIDI_BYTE_2)
+                set_midi(target, MIDI_COMMAND, MIDI_BYTE_1, MIDI_BYTE_2)
             end if
             // Track number of currently held keyswitches (for layering)
             if is_note_on_event = 1
@@ -1041,7 +1041,7 @@ on midi_in
 
         offset := MIDI_CHANNEL * 2
         idx := MIDI_CHANNEL * 128 * 2 + MIDI_BYTE_1 * 2
-        //dst_midi_byte_1 := MIDI_BYTE_1
+        dst_midi_byte_1 := MIDI_BYTE_1
 
 
         // Special treatment for CC events.
