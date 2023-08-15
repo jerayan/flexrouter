@@ -3,7 +3,7 @@ import "utils.ksp"
 import "gui.ksp"
 
 on init
-    set_script_title("FlexRouter 3.3")
+    set_script_title("FlexRouter 3.5")
     declare const DEBUG := 1
     declare const CONFIG_VERSION := 5
 
@@ -67,14 +67,24 @@ on init
 
     // Timing/Delay feature.
     // v3. Timing
-    declare const RULE_TIMING := 6
-    // v3.3 First note Timing
-    declare const RULE_TIMING_FIRST_NOTE := 50
-    // v3.2 Range
-    declare const RULE_RANGE_IN := 8
-    declare const RULE_RANGE_OUT := 9
-    declare const RULE_VELOCITYFORCC := 10
-    declare const KEYSWITCH_VELOCITYFORCC := 11
+    declare const RULE_TIMING := 7
+
+    declare is_note_on_event
+    declare is_note_off_event
+    //TIMING ARRAY
+    declare need_maps_rebuild := 1
+    declare timing_arr[16] := (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+    declare transpose_arr[16] := (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+    declare range_in_arr[16]
+    declare range_out_arr[16]
+    declare velocityforcc_arr[16]
+    declare keyswitch_velocityforcc_arr[16]
+    //declare legato_timing_arr[16] := (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+    //declare legato_arr[16] := (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+    //declare legato_array[16]
+
+    // iterate_macro(declare legato_array#n#[16]) := 0 to 15
+
     // When the keyswitch is activated, non-keyswitch MIDI events received on this channel will be
     // redirected to the target channel.   A value of 0 means to use the rule default source,
     // -1 means all channels (omni), otherwise refers to a specific channel starting at 1.
@@ -90,10 +100,17 @@ on init
     declare const RULE_KEYSWITCH_VELOCITY_RANGE := 4
 
     // Number of semitones to transpose incoming notes when the keyswitch is activated.
-    declare const RULE_KEYSWITCH_TRANSPOSE := 70
+    declare const RULE_KEYSWITCH_TRANSPOSE := 6
 
     declare const VELOCITY_RANGE_DEFAULT := 0x7f00 // 0-127
 
+        // v3.6 alfa First note Timing
+    //declare const RULE_TIMING_FIRST_NOTE := 50
+    // v3.5 Range
+    declare const RULE_RANGE_IN := 100
+    declare const RULE_RANGE_OUT := 101
+    declare const RULE_VELOCITYFORCC := 102
+    declare const KEYSWITCH_VELOCITYFORCC := 103
 
 
     family rules
@@ -295,14 +312,13 @@ on init
 
     // FIXME: num_ks_down should be tracked per channel
     declare num_ks_down := 0
-    declare is_note_on_event
-    declare is_note_off_event
     declare config
     declare offset
     declare idx
     declare i
     declare j
     declare k
+    declare %t[NUM_SOURCE_CHANNELS * 128]
     declare count
     declare ks
     declare source
@@ -322,15 +338,16 @@ on init
     declare range_in := 0
     declare range_out := 0
     declare velocityforcc := 0
-    declare last_note
     declare index_note := 0
     declare pressed := 0
     declare dst_midi_byte_1
-    declare %legato_array[2]
+    declare new_velocity
+
+    iterate_macro(declare cc_value_#n#[128]):= 0 to 15
 
     // Flag to rebuild maps on next MIDI event.  Normally this was done during init
     // but Kontakt complains about too many iterations.
-    declare need_maps_rebuild := 1
+
     declare @name
 
     utils_initialize()
@@ -349,9 +366,9 @@ on init
     make_persistent(blackholed_sources)
     make_persistent(transpose)
     make_persistent(timing)
-    make_persistent(timing_first_note)
-    //make_persistent(range_in)
-    //make_persistent(range_out)
+    make_persistent(velocityforcc)
+    make_persistent(range_in)
+    make_persistent(range_out)
 
     // Before reading persisted rules, initialize global config and create an initial dummy rule.
     global_config[GLOBAL_CONFIG_VERSION] := CONFIG_VERSION
@@ -368,9 +385,9 @@ on init
     read_persistent_var(rules._keyswitch_config)
     read_persistent_var(rules._keyswitch_redirects)
     read_persistent_var(timing)
-    read_persistent_var(timing_first_note)
-    //read_persistent_var(range_in)
-    //read_persistent_var(range_out)
+    read_persistent_var(velocityforcc)
+    read_persistent_var(range_in)
+    read_persistent_var(range_out)
     read_persistent_var(transpose)
 
     migrate_config()
@@ -392,8 +409,13 @@ function migrate_config
                 velocity := rules[rule].keyswitch[ks].config[1]
                 rules[rule].keyswitch[ks].config[RULE_KEYSWITCH_FLAGS] := 0
                 rules[rule].keyswitch[ks].config[RULE_TIMING] := 0
-                rules[rule].keyswitch[ks].config[RULE_TIMING_FIRST_NOTE] := 0
-                rules[rule].keyswitch[ks].velocity._raw := VELOCITY_RANGE_DEFAULT
+                rules[rule].keyswitch[ks].config[RULE_KEYSWITCH_TRANSPOSE] := 0
+                rules[rule].keyswitch[ks].config[RULE_RANGE_IN] := 0
+                rules[rule].keyswitch[ks].config[RULE_RANGE_OUT] := 0
+                rules[rule].keyswitch[ks].config[RULE_VELOCITYFORCC] := 0
+                rules[rule].keyswitch[ks].config[KEYSWITCH_VELOCITYFORCC] := 0
+                //rules[rule].keyswitch[ks].config[RULE_TIMING_FIRST_NOTE] := 0
+                //rules[rule].keyswitch[ks].velocity._raw := VELOCITY_RANGE_DEFAULT
                 // Initialize redirects
                 for i := 0 to MAX_REDIRECTS_PER_KEYSWITCH - 1
                     rules[rule].keyswitch[ks].redirects[i]._raw := KEYSWITCH_UNDEFINED
@@ -431,7 +453,11 @@ function migrate_config
             for ks := 0 to MAX_KEYSWITCHES_PER_RULE - 1
                 rules[rule].keyswitch[ks].config[RULE_KEYSWITCH_TRANSPOSE] := 0
                 rules[rule].keyswitch[ks].config[RULE_TIMING] := 0
-                rules[rule].keyswitch[ks].config[RULE_TIMING_FIRST_NOTE] := 0
+                //rules[rule].keyswitch[ks].config[RULE_TIMING_FIRST_NOTE] := 0
+                rules[rule].keyswitch[ks].config[RULE_RANGE_IN] := 0
+                rules[rule].keyswitch[ks].config[RULE_RANGE_OUT] := 0
+                rules[rule].keyswitch[ks].config[RULE_VELOCITYFORCC] := 0
+                rules[rule].keyswitch[ks].config[KEYSWITCH_VELOCITYFORCC] := 0
             end for
         end for
     end if
@@ -454,7 +480,12 @@ function initialize_rule(idx, name)
         rules[idx].keyswitch[i].config[RULE_KEYSWITCH_FLAGS] := 0
         // v3. Timing
         rules[idx].keyswitch[i].config[RULE_TIMING] := 0
-        rules[idx].keyswitch[i].config[RULE_TIMING_FIRST_NOTE] := 0
+        rules[idx].keyswitch[i].config[RULE_KEYSWITCH_TRANSPOSE] := 0
+        rules[idx].keyswitch[i].config[RULE_RANGE_IN] := 0
+        rules[idx].keyswitch[i].config[RULE_RANGE_OUT] := 0
+        rules[idx].keyswitch[i].config[RULE_VELOCITYFORCC] := 0
+        rules[idx].keyswitch[i].config[KEYSWITCH_VELOCITYFORCC] := 0
+        //rules[idx].keyswitch[i].config[RULE_TIMING_FIRST_NOTE] := 0
         rules[idx].keyswitch[i].config[RULE_KEYSWITCH_SOURCE_CHANNEL] := 0
         rules[idx].keyswitch[i].config[RULE_KEYSWITCH_TARGET_CHANNEL] := 0
         for j := 0 to MAX_REDIRECTS_PER_KEYSWITCH - 1
@@ -479,9 +510,14 @@ function copy_rule(src, dst)
         rules[dst].keyswitch[i].config[RULE_KEYSWITCH_ACTION] := rules[src].keyswitch[i].config[RULE_KEYSWITCH_ACTION]
         // v3. Timing
         rules[dst].keyswitch[i].config[RULE_TIMING] := rules[src].keyswitch[i].config[RULE_TIMING]
-        rules[dst].keyswitch[i].config[RULE_TIMING_FIRST_NOTE] := rules[src].keyswitch[i].config[RULE_TIMING_FIRST_NOTE]
+        //rules[dst].keyswitch[i].config[RULE_TIMING_FIRST_NOTE] := rules[src].keyswitch[i].config[RULE_TIMING_FIRST_NOTE]
         rules[dst].keyswitch[i].config[RULE_KEYSWITCH_SOURCE_CHANNEL] := rules[src].keyswitch[i].config[RULE_KEYSWITCH_SOURCE_CHANNEL]
         rules[dst].keyswitch[i].config[RULE_KEYSWITCH_TARGET_CHANNEL] := rules[src].keyswitch[i].config[RULE_KEYSWITCH_TARGET_CHANNEL]
+        rules[dst].keyswitch[i].config[RULE_KEYSWITCH_TRANSPOSE] := rules[src].keyswitch[i].config[RULE_KEYSWITCH_TRANSPOSE]
+        rules[dst].keyswitch[i].config[RULE_RANGE_IN] := rules[src].keyswitch[i].config[RULE_RANGE_IN]
+        rules[dst].keyswitch[i].config[RULE_RANGE_OUT] := rules[src].keyswitch[i].config[RULE_RANGE_OUT]
+        rules[dst].keyswitch[i].config[RULE_VELOCITYFORCC] := rules[src].keyswitch[i].config[RULE_VELOCITYFORCC]
+        rules[dst].keyswitch[i].config[KEYSWITCH_VELOCITYFORCC] := rules[src].keyswitch[i].config[KEYSWITCH_VELOCITYFORCC]
 
         // Copy keyswitch redirects
         for j := 0 to MAX_REDIRECTS_PER_KEYSWITCH - 1
@@ -728,6 +764,7 @@ end function
 
 
 function trigger_keyswitch_for_rule(rule, ks, idx)
+
     // Set the active route from source channel(s) to target channel.
     source := rules[rule].keyswitch[idx].config[RULE_KEYSWITCH_SOURCE_CHANNEL]
     if source = 0
@@ -745,12 +782,58 @@ function trigger_keyswitch_for_rule(rule, ks, idx)
     if target > 0
         target := target - 1
         action := rules[rule].keyswitch[idx].config[RULE_KEYSWITCH_ACTION]
-        transpose := rules[rule].keyswitch[idx].config[RULE_KEYSWITCH_TRANSPOSE]
-        timing := rules[rule].keyswitch[idx].config[RULE_TIMING]
-        timing_first_note := rules[rule].keyswitch[idx].config[RULE_TIMING_FIRST_NOTE]
-        //range_in := rules[rule].keyswitch[idx].config[RULE_RANGE_IN]
-        //range_out := rules[rule].keyswitch[idx].config[RULE_RANGE_OUT]
-        //velocityforcc := rules[rule].keyswitch[idx].config[RULE_VELOCITYFORCC]
+
+
+        // Apply the timing value for each source channel and store it in the timing_arr
+        if source = -1
+            for j := 0 to NUM_SOURCE_CHANNELS - 1
+                timing_arr[j] := rules[rule].keyswitch[idx].config[RULE_TIMING]
+            end for
+        else
+            timing_arr[source - 1] := rules[rule].keyswitch[idx].config[RULE_TIMING]
+        end if
+
+
+        // Apply the transpose value for each source channel and store it in the transpose_arr
+        if source = -1
+            for j := 0 to NUM_SOURCE_CHANNELS - 1
+                transpose_arr[j] := rules[rule].keyswitch[idx].config[RULE_KEYSWITCH_TRANSPOSE]
+            end for
+        else
+            transpose_arr[source - 1] := rules[rule].keyswitch[idx].config[RULE_KEYSWITCH_TRANSPOSE]
+        end if
+
+        // Apply the ranges value for each source channel and store it in the range_in_arr & range_out_arr
+        if source = -1
+            for j := 0 to NUM_SOURCE_CHANNELS - 1
+                range_in_arr[j] := rules[rule].keyswitch[idx].config[RULE_RANGE_IN]
+                range_out_arr[j] := rules[rule].keyswitch[idx].config[RULE_RANGE_OUT]
+            end for
+        else
+            range_in_arr[source - 1] := rules[rule].keyswitch[idx].config[RULE_RANGE_IN]
+            range_out_arr[source - 1] := rules[rule].keyswitch[idx].config[RULE_RANGE_OUT]
+        end if
+
+        if source = -1
+            for j := 0 to NUM_SOURCE_CHANNELS - 1
+                velocityforcc_arr[j] := rules[rule].keyswitch[idx].config[RULE_VELOCITYFORCC]
+                keyswitch_velocityforcc_arr[j] := rules[rule].keyswitch[idx].config[KEYSWITCH_VELOCITYFORCC]
+            end for
+        else
+            velocityforcc_arr[source - 1] := rules[rule].keyswitch[idx].config[RULE_VELOCITYFORCC]
+            keyswitch_velocityforcc_arr[source - 1] := rules[rule].keyswitch[idx].config[KEYSWITCH_VELOCITYFORCC]
+        end if
+
+
+        // Apply the first note timing value for each source channel and store it in the timing_arr
+        // if source = -1
+        //     for j := 0 to NUM_SOURCE_CHANNELS - 1
+        //         legato_timing_arr[j] := rules[rule].keyswitch[idx].config[RULE_TIMING_FIRST_NOTE]
+        //     end for
+        // else
+        //     legato_timing_arr[source - 1] := rules[rule].keyswitch[idx].config[RULE_TIMING_FIRST_NOTE]
+        // end if
+
         if flag .and. KEYSWITCH_FLAG_IGNORE_ROUTING = 0
             if source = -1
                 // Source is omni: route all channels to keyswitch target.
@@ -788,6 +871,7 @@ function trigger_keyswitch_for_rule(rule, ks, idx)
                     evcode := rules[rule].keyswitch[idx].redirects[i].evcode
                     if evcode < 128
                         // Redirect to a note
+                        
                         velocity := rules[rule].keyswitch[idx].redirects[i].velocity
                         set_midi(target, MIDI_COMMAND_NOTE_ON, evcode, velocity)
 
@@ -828,36 +912,38 @@ function trigger_keyswitch_for_rule(rule, ks, idx)
     end if // target > 0
 end function
 
+function set_channel_timing(channel, value)
+    timing_arr[channel] := value
+end function
+
+function set_channel_transpose(channel, value)
+    transpose_arr[channel] := value
+end function
+
+function set_channel_range_in(channel, value)
+    range_in_arr[channel] := value
+end function
+
+function set_channel_range_out(channel, value)
+    range_out_arr[channel] := value
+end function
+
+function set_channel_velocityforcc(channel, value)
+    velocityforcc_arr[channel] := value
+end function
 
 on midi_in
-
 
     if need_maps_rebuild = 1
         need_maps_rebuild := 0
         call build_ks_maps
     end if
 
-    if (MIDI_COMMAND = MIDI_COMMAND_NOTE_ON and (MIDI_BYTE_1 # j))
-    last_note := MIDI_BYTE_1
-    end if
-    i := 1
-    %legato_array[0] := i
-    if (MIDI_COMMAND = MIDI_COMMAND_NOTE_OFF and (MIDI_BYTE_1 = last_note))
-    i := 0
-    %legato_array[0] := i
-    end if
 
     if MIDI_COMMAND = MIDI_COMMAND_NOTE_ON and MIDI_BYTE_2 > 0
         is_note_on_event := 1
     else
         is_note_on_event := 0
-    end if
-
-    if MIDI_COMMAND = MIDI_COMMAND_NOTE_ON and MIDI_BYTE_2 = 0 or MIDI_COMMAND = MIDI_COMMAND_NOTE_OFF
-        %legato_array[1] := %legato_array[0]
-        is_note_off_event := 1
-    else
-        is_note_off_event := 0
     end if
 
     // Determine key/CC switch value from event
@@ -890,7 +976,6 @@ on midi_in
         if is_note_on_event = 1 or MIDI_COMMAND = MIDI_COMMAND_CC or MIDI_COMMAND = MIDI_COMMAND_PROGRAM_CHANGE
             gui_set_selected_keyswitch_redirect(ks, MIDI_BYTE_2)
         end if
-
 
     else if ks # KEYSWITCH_UNDEFINED and ks_to_keyswitch_channels[ks] .and. sh_left(1, MIDI_CHANNEL) # 0
         // Event is a configured key/CC switch for the source MIDI channel.
@@ -940,7 +1025,7 @@ on midi_in
             if triggered = 0
                 // Regenerate the original MIDI event because the velocity was out of range.
 
-                set_midi(target, MIDI_COMMAND, MIDI_BYTE_1, MIDI_BYTE_2)
+                //set_midi(target, MIDI_COMMAND, MIDI_BYTE_1, MIDI_BYTE_2)
             end if
             // Track number of currently held keyswitches (for layering)
             if is_note_on_event = 1
@@ -954,65 +1039,10 @@ on midi_in
         end if
     else
 
-                //Timing feature
-    active_notes_timing[MIDI_CHANNEL * NUM_SOURCE_CHANNELS + MIDI_BYTE_1] := timing
-    active_notes_timing_first_note[MIDI_CHANNEL * NUM_SOURCE_CHANNELS + MIDI_BYTE_1] := timing_first_note
-
-        // Apply Timing and 1st note timing
-
-        //message (%legato_array[0] & " " & %legato_array[1]) 
-
-        if (timing > 0 or timing_first_note > 0)
-        ignore_midi
-          if (%legato_array[1] = 0)
-            wait((timing_first_note * 1000)+1)
-          end if
-            wait((timing * 1000)+1)
-        end if
-
-        // Non-keyswitch event.  Route to active targets.
-        // FIXME: find better names
         offset := MIDI_CHANNEL * 2
         idx := MIDI_CHANNEL * 128 * 2 + MIDI_BYTE_1 * 2
-        dst_midi_byte_1 := MIDI_BYTE_1
-        
-        //message(MIDI_BYTE_1)
-        // Prevent note hanging.
-        if is_note_off_event = 1
+        //dst_midi_byte_1 := MIDI_BYTE_1
 
-
-            // Check to see if the active channels for the given note is different from the active routes
-            // for this MIDI channel.  If it is, then send the note off event to those channels.  It's
-            // technically redundant to route the event to the active channels later, but it's not worth
-            // avoiding the repeated note off for this uncommon case, since the active note routes is
-            // a superset of the active routes for note-off events.
-            //
-            // Also route the note-off now if the note-on had a different transpose amount than we currently do,
-            // otherwise we'll end up with a hanging note.  FIXME: there is a problematic edge case
-            // where the duplicate note-off below isn't actually a dupe because it can can have a different
-            // transpose amount, which could result in a note-off for a different note we pressed since
-            // activating the new keyswitch (transposed differently).  Fixing this properly would require
-            // tracking each note-on per transpose amount.  That's annoying enough that we'll probably
-            // just live with this edge case.
-            
-            j := active_notes_transpose[MIDI_CHANNEL * NUM_SOURCE_CHANNELS + MIDI_BYTE_1]
-            if active_notes_routes_bitmap[idx] # active_routes_bitmap[offset] or ...
-               active_notes_routes_bitmap[idx + 1] # active_routes_bitmap[offset + 1] or ...
-               j # transpose
-                route_midi_event(active_notes_routes_bitmap, idx, MIDI_COMMAND, MIDI_BYTE_1 + j, MIDI_BYTE_2)
-            end if
-
-            // Having just sent the note off event to all relevant channels, clear the bitmap.
-            active_notes_routes_bitmap[idx] := 0
-            active_notes_routes_bitmap[idx + 1] := 0
-            dst_midi_byte_1 := dst_midi_byte_1 + transpose
-        else if is_note_on_event = 1
-            // Track all active routing channels for the note being triggered.
-            active_notes_routes_bitmap[idx] := active_notes_routes_bitmap[idx] .or. active_routes_bitmap[offset]
-            active_notes_routes_bitmap[idx + 1] := active_notes_routes_bitmap[idx + 1] .or. active_routes_bitmap[offset + 1]
-            active_notes_transpose[MIDI_CHANNEL * NUM_SOURCE_CHANNELS + MIDI_BYTE_1] := transpose
-            dst_midi_byte_1 := dst_midi_byte_1 + transpose
-        end if
 
         // Special treatment for CC events.
         if MIDI_COMMAND = MIDI_COMMAND_CC
@@ -1072,4 +1102,88 @@ on midi_in
         // message("")
         // debug("MIDI: cmd=" & MIDI_COMMAND & ", ch=" & MIDI_CHANNEL & ", b1=" & MIDI_BYTE_1 & ", b2=" & MIDI_BYTE_2 & ", ks=" & ks)
     end if
+
+
+    // TIMING FEATURE
+
+
+iterate_macro(channel_with_midi(#n#)):= 0 to 15
+
+macro channel_with_midi(#n#)
+
+if (MIDI_CHANNEL = #n#)
+
+
+        // if (MIDI_COMMAND = MIDI_COMMAND_NOTE_ON and (MIDI_BYTE_1 # j))
+        // last_note[#n#] := MIDI_BYTE_1
+        // end if
+        // i := 1
+        // %legato_array#n#[0] := i
+        // if (MIDI_COMMAND = MIDI_COMMAND_NOTE_OFF and (MIDI_BYTE_1 = last_note[#n#]))
+        // i := 0
+        // %legato_array#n#[0] := i
+        // end if
+
+        // if MIDI_COMMAND = MIDI_COMMAND_NOTE_ON and MIDI_BYTE_2 > 0
+        //     is_note_on_event := 1 
+        // else
+        //     is_note_on_event := 0
+        // end if
+
+        // if MIDI_COMMAND = MIDI_COMMAND_NOTE_ON and MIDI_BYTE_2 = 0 or MIDI_COMMAND = MIDI_COMMAND_NOTE_OFF
+        //     %legato_array#n#[1] := %legato_array#n#[0]
+        //     is_note_off_event := 1
+        // else
+        //     is_note_off_event := 0
+        //     %legato_array#n#[1] := 0
+        // end if
+
+        //message(%legato_array0[1])
+
+    ignore_midi
+
+        // if %legato_arr[#n#] > 0 and %legato_array#n#[1] = 0 and MIDI_BYTE_1 >= 24 and MIDI_BYTE_1 <= 84
+        //     wait(%legato_timing_arr[#n#]*1000)
+        // else
+
+
+    // TIMING
+
+    if %timing_arr[#n#] > 0
+        wait(%timing_arr[#n#]*1000)
+    end if
+
+    // TRANSPOSING
+
+    if (MIDI_COMMAND = MIDI_COMMAND_CC)
+        cc_value_#n#[$MIDI_BYTE_1] := $MIDI_BYTE_2  { Uložení hodnoty CC }
+    end if
+
+
+    if (MIDI_COMMAND = MIDI_COMMAND_NOTE_ON) or (MIDI_COMMAND = MIDI_COMMAND_NOTE_OFF)
+        if (MIDI_BYTE_1 >= %range_in_arr[#n#] and MIDI_BYTE_1 <= %range_out_arr[#n#])
+            
+            { Zkontrolovat, zda je přepínač pro úpravu velocity zapnutý }
+            if (keyswitch_velocityforcc_arr[#n#] = 1)
+                { Upravit velocity noty dle hodnoty v velocityforcc_arr }
+                
+                set_midi(#n#,MIDI_COMMAND,MIDI_BYTE_1+%transpose_arr[#n#],cc_value_#n#[velocityforcc_arr[#n#]])
+            else
+                set_midi(#n#,MIDI_COMMAND,MIDI_BYTE_1+%transpose_arr[#n#],MIDI_BYTE_2)
+            end if
+        else
+            set_midi(#n#,MIDI_COMMAND,MIDI_BYTE_1,MIDI_BYTE_2)
+        end if
+    else
+        set_midi(#n#,MIDI_COMMAND,MIDI_BYTE_1,MIDI_BYTE_2)
+    end if
+
+
+
+end if
+
+end macro
+
+        //message("Ch1: " & %timing_arr[0] & ", Ch2: " & %timing_arr[1] & ", Ch3: " & %timing_arr[2] & ", Ch4: " & %timing_arr[3] & ", Ch5: " & %timing_arr[4] & ", " & "Ch6: " & %timing_arr[5] & ", Ch7: " & %timing_arr[6] & ", Ch8: " & %timing_arr[7] & ", Ch9: " & %timing_arr[8] & ", Ch10: " & %timing_arr[9] & ", " &  "Ch11: " & %timing_arr[10] & ", Ch12: " & %timing_arr[11] & ", Ch13: " & %timing_arr[12] & ", Ch14: " & %timing_arr[13] & ", Ch15: " & %timing_arr[14] & ", Ch16: " & %timing_arr[15])
+        //message(%timing_arr[0] & " " & %legato_arr[0] & " array: " & %legato_array0[1])
 end on
