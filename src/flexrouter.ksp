@@ -75,10 +75,11 @@ on init
     declare need_maps_rebuild := 1
     declare timing_arr[16] := (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
     declare transpose_arr[16] := (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-    declare range_in_arr[16]
+    declare range_in_arr[16] := (30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30)
     declare range_out_arr[16]
     declare velocityforcc_arr[16]
     declare keyswitch_velocityforcc_arr[16]
+    declare target_arr[16]
     //declare legato_timing_arr[16] := (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
     //declare legato_arr[16] := (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
     //declare legato_array[16]
@@ -414,6 +415,7 @@ function migrate_config
                 rules[rule].keyswitch[ks].config[RULE_RANGE_OUT] := 0
                 rules[rule].keyswitch[ks].config[RULE_VELOCITYFORCC] := 0
                 rules[rule].keyswitch[ks].config[KEYSWITCH_VELOCITYFORCC] := 0
+                rules[rule].keyswitch[ks].config[RULE_KEYSWITCH_TARGET_CHANNEL] := 0
                 //rules[rule].keyswitch[ks].config[RULE_TIMING_FIRST_NOTE] := 0
                 //rules[rule].keyswitch[ks].velocity._raw := VELOCITY_RANGE_DEFAULT
                 // Initialize redirects
@@ -458,6 +460,7 @@ function migrate_config
                 rules[rule].keyswitch[ks].config[RULE_RANGE_OUT] := 0
                 rules[rule].keyswitch[ks].config[RULE_VELOCITYFORCC] := 0
                 rules[rule].keyswitch[ks].config[KEYSWITCH_VELOCITYFORCC] := 0
+                rules[rule].keyswitch[ks].config[RULE_KEYSWITCH_TARGET_CHANNEL] := 0
             end for
         end for
     end if
@@ -778,10 +781,18 @@ function trigger_keyswitch_for_rule(rule, ks, idx)
         target := rules[rule].config[RULE_TARGET_CHANNEL]
     end if
 
+    // Apply the target value for each source channel and store it in the target_arr
+     
+
     flag := rules[rule].keyswitch[idx].config[RULE_KEYSWITCH_FLAGS]
     if target > 0
         target := target - 1
         action := rules[rule].keyswitch[idx].config[RULE_KEYSWITCH_ACTION]
+
+
+            for j := 0 to NUM_SOURCE_CHANNELS - 1
+                target_arr[j] := target
+            end for
 
 
         // Apply the timing value for each source channel and store it in the timing_arr
@@ -932,6 +943,10 @@ function set_channel_velocityforcc(channel, value)
     velocityforcc_arr[channel] := value
 end function
 
+function set_target_channel(channel, value)
+    target_arr[channel] := value
+end function
+
 on midi_in
 
     if need_maps_rebuild = 1
@@ -1025,7 +1040,7 @@ on midi_in
             if triggered = 0
                 // Regenerate the original MIDI event because the velocity was out of range.
 
-                set_midi(target, MIDI_COMMAND, MIDI_BYTE_1, MIDI_BYTE_2)
+                //set_midi(target, MIDI_COMMAND, MIDI_BYTE_1, MIDI_BYTE_2)
             end if
             // Track number of currently held keyswitches (for layering)
             if is_note_on_event = 1
@@ -1041,7 +1056,7 @@ on midi_in
 
         offset := MIDI_CHANNEL * 2
         idx := MIDI_CHANNEL * 128 * 2 + MIDI_BYTE_1 * 2
-        dst_midi_byte_1 := MIDI_BYTE_1
+        //dst_midi_byte_1 := MIDI_BYTE_1
 
 
         // Special treatment for CC events.
@@ -1094,8 +1109,9 @@ on midi_in
         // Now route the event to all active channels if there are active routes for this MIDI channel.
         // If there aren't any active routes, we don't interfere with the event.
         if active_routes_bitmap[offset] # 0 or active_routes_bitmap[offset + 1] # 0
+
             ignore_midi
-            route_midi_event(active_routes_bitmap, offset, MIDI_COMMAND, dst_midi_byte_1, MIDI_BYTE_2)
+
         else if blackholed_sources[MIDI_CHANNEL] # 0
             ignore_midi
         end if
@@ -1105,7 +1121,6 @@ on midi_in
 
 
     // TIMING FEATURE
-
 
 iterate_macro(channel_with_midi(#n#)):= 0 to 15
 
@@ -1140,25 +1155,23 @@ if (MIDI_CHANNEL = #n#)
 
         //message(%legato_array0[1])
 
-    ignore_midi
 
         // if %legato_arr[#n#] > 0 and %legato_array#n#[1] = 0 and MIDI_BYTE_1 >= 24 and MIDI_BYTE_1 <= 84
         //     wait(%legato_timing_arr[#n#]*1000)
         // else
 
-
     // TIMING
 
-    if %timing_arr[#n#] > 0
+    ignore_midi
+    // TRANSPOSING
+
+        if %timing_arr[#n#] > 0
         wait(%timing_arr[#n#]*1000)
     end if
-
-    // TRANSPOSING
 
     if (MIDI_COMMAND = MIDI_COMMAND_CC)
         cc_value_#n#[$MIDI_BYTE_1] := $MIDI_BYTE_2  { Uložení hodnoty CC }
     end if
-
 
     if (MIDI_COMMAND = MIDI_COMMAND_NOTE_ON) or (MIDI_COMMAND = MIDI_COMMAND_NOTE_OFF)
         if (MIDI_BYTE_1 >= %range_in_arr[#n#] and MIDI_BYTE_1 <= %range_out_arr[#n#])
@@ -1166,24 +1179,26 @@ if (MIDI_CHANNEL = #n#)
             { Zkontrolovat, zda je přepínač pro úpravu velocity zapnutý }
             if (keyswitch_velocityforcc_arr[#n#] = 1)
                 { Upravit velocity noty dle hodnoty v velocityforcc_arr }
-                
+
+                //route_midi_event(active_routes_bitmap, offset, MIDI_COMMAND, MIDI_BYTE_1+%transpose_arr[#n#], cc_value_#n#[velocityforcc_arr[#n#]])
                 set_midi(#n#,MIDI_COMMAND,MIDI_BYTE_1+%transpose_arr[#n#],cc_value_#n#[velocityforcc_arr[#n#]])
             else
+                //route_midi_event(active_routes_bitmap, offset, MIDI_COMMAND, MIDI_BYTE_1+%transpose_arr[#n#], MIDI_BYTE_2)
                 set_midi(#n#,MIDI_COMMAND,MIDI_BYTE_1+%transpose_arr[#n#],MIDI_BYTE_2)
             end if
         else
+            //route_midi_event(active_routes_bitmap, offset, MIDI_COMMAND, MIDI_BYTE_1, MIDI_BYTE_2)
             set_midi(#n#,MIDI_COMMAND,MIDI_BYTE_1,MIDI_BYTE_2)
         end if
     else
+        //route_midi_event(active_routes_bitmap, offset, MIDI_COMMAND, MIDI_BYTE_1, MIDI_BYTE_2)
         set_midi(#n#,MIDI_COMMAND,MIDI_BYTE_1,MIDI_BYTE_2)
     end if
-
-
 
 end if
 
 end macro
-
+       
         //message("Ch1: " & %timing_arr[0] & ", Ch2: " & %timing_arr[1] & ", Ch3: " & %timing_arr[2] & ", Ch4: " & %timing_arr[3] & ", Ch5: " & %timing_arr[4] & ", " & "Ch6: " & %timing_arr[5] & ", Ch7: " & %timing_arr[6] & ", Ch8: " & %timing_arr[7] & ", Ch9: " & %timing_arr[8] & ", Ch10: " & %timing_arr[9] & ", " &  "Ch11: " & %timing_arr[10] & ", Ch12: " & %timing_arr[11] & ", Ch13: " & %timing_arr[12] & ", Ch14: " & %timing_arr[13] & ", Ch15: " & %timing_arr[14] & ", Ch16: " & %timing_arr[15])
         //message(%timing_arr[0] & " " & %legato_arr[0] & " array: " & %legato_array0[1])
 end on
