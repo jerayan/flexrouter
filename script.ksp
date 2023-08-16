@@ -44,10 +44,11 @@ on init
   declare $need_maps_rebuild := 1
   declare %timing_arr[16] := (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
   declare %transpose_arr[16] := (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-  declare %range_in_arr[16]
+  declare %range_in_arr[16] := (30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30)
   declare %range_out_arr[16]
   declare %velocityforcc_arr[16]
   declare %keyswitch_velocityforcc_arr[16]
+  declare %target_arr[16]
   declare const $RULE_KEYSWITCH_SOURCE_CHANNEL := 2
   declare const $RULE_KEYSWITCH_TARGET_CHANNEL := 3
   declare const $RULE_KEYSWITCH_VELOCITY_RANGE := 4
@@ -328,6 +329,7 @@ on init
         %rules___keyswitch_config[$rule*$MAX_KEYSWITCHES_PER_RULE*$MAX_CONFIG_PER_KEYSWITCH+($ks*$MAX_CONFIG_PER_KEYSWITCH)+$RULE_RANGE_OUT] := 0
         %rules___keyswitch_config[$rule*$MAX_KEYSWITCHES_PER_RULE*$MAX_CONFIG_PER_KEYSWITCH+($ks*$MAX_CONFIG_PER_KEYSWITCH)+$RULE_VELOCITYFORCC] := 0
         %rules___keyswitch_config[$rule*$MAX_KEYSWITCHES_PER_RULE*$MAX_CONFIG_PER_KEYSWITCH+($ks*$MAX_CONFIG_PER_KEYSWITCH)+$KEYSWITCH_VELOCITYFORCC] := 0
+        %rules___keyswitch_config[$rule*$MAX_KEYSWITCHES_PER_RULE*$MAX_CONFIG_PER_KEYSWITCH+($ks*$MAX_CONFIG_PER_KEYSWITCH)+$RULE_KEYSWITCH_TARGET_CHANNEL] := 0
         $i := 0
         while ($i<$MAX_REDIRECTS_PER_KEYSWITCH)
           %rules___keyswitch_redirects[$rule*$MAX_KEYSWITCHES_PER_RULE*$MAX_REDIRECTS_PER_KEYSWITCH+($ks*$MAX_REDIRECTS_PER_KEYSWITCH)+$i] := $KEYSWITCH_UNDEFINED
@@ -375,6 +377,7 @@ on init
         %rules___keyswitch_config[$rule*$MAX_KEYSWITCHES_PER_RULE*$MAX_CONFIG_PER_KEYSWITCH+($ks*$MAX_CONFIG_PER_KEYSWITCH)+$RULE_RANGE_OUT] := 0
         %rules___keyswitch_config[$rule*$MAX_KEYSWITCHES_PER_RULE*$MAX_CONFIG_PER_KEYSWITCH+($ks*$MAX_CONFIG_PER_KEYSWITCH)+$RULE_VELOCITYFORCC] := 0
         %rules___keyswitch_config[$rule*$MAX_KEYSWITCHES_PER_RULE*$MAX_CONFIG_PER_KEYSWITCH+($ks*$MAX_CONFIG_PER_KEYSWITCH)+$KEYSWITCH_VELOCITYFORCC] := 0
+        %rules___keyswitch_config[$rule*$MAX_KEYSWITCHES_PER_RULE*$MAX_CONFIG_PER_KEYSWITCH+($ks*$MAX_CONFIG_PER_KEYSWITCH)+$RULE_KEYSWITCH_TARGET_CHANNEL] := 0
         inc($ks)
       end while
       inc($rule)
@@ -3397,6 +3400,11 @@ on midi_in
                       if ($target>0)
                         $target := $target-1
                         $action := %rules___keyswitch_config[$rule*$MAX_KEYSWITCHES_PER_RULE*$MAX_CONFIG_PER_KEYSWITCH+($idx*$MAX_CONFIG_PER_KEYSWITCH)+$RULE_KEYSWITCH_ACTION]
+                        $j := 0
+                        while ($j<$NUM_SOURCE_CHANNELS)
+                          %target_arr[$j] := $target
+                          inc($j)
+                        end while
                         if ($source=-1)
                           $j := 0
                           while ($j<$NUM_SOURCE_CHANNELS)
@@ -3602,7 +3610,6 @@ on midi_in
               inc($rule)
             end while
             if ($triggered=0)
-              set_midi($target,$MIDI_COMMAND,$MIDI_BYTE_1,$MIDI_BYTE_2)
             end if
             if ($is_note_on_event=1)
               inc($num_ks_down)
@@ -3617,7 +3624,6 @@ on midi_in
         else
           $offset := $MIDI_CHANNEL*2
           $idx := $MIDI_CHANNEL*128*2+($MIDI_BYTE_1*2)
-          $dst_midi_byte_1 := $MIDI_BYTE_1
           if ($MIDI_COMMAND=$MIDI_COMMAND_CC)
             %last_cc_values_by_source[$MIDI_CHANNEL*$NUM_SOURCE_CHANNELS+$MIDI_BYTE_1] := $MIDI_BYTE_2
             %last_cc_values[$MIDI_BYTE_1] := $MIDI_BYTE_2 .or. sh_left($MIDI_CHANNEL,8)
@@ -3690,24 +3696,6 @@ on midi_in
           end if
           if (%active_routes_bitmap[$offset] # 0 or (%active_routes_bitmap[$offset+1] # 0))
             ignore_midi
-            if (%active_routes_bitmap[$offset] # 0)
-              $i := 0
-              while ($i<=31)
-                if (%active_routes_bitmap[$offset] .and. sh_left(1,$i) # 0)
-                  set_midi(0+$i,$MIDI_COMMAND,$dst_midi_byte_1,$MIDI_BYTE_2)
-                end if
-                inc($i)
-              end while
-            end if
-            if (%active_routes_bitmap[$offset+1] # 0)
-              $i := 0
-              while ($i<=31)
-                if (%active_routes_bitmap[$offset+1] .and. sh_left(1,$i) # 0)
-                  set_midi(32+$i,$MIDI_COMMAND,$dst_midi_byte_1,$MIDI_BYTE_2)
-                end if
-                inc($i)
-              end while
-            end if
           else
             if (%blackholed_sources[$MIDI_CHANNEL] # 0)
               ignore_midi
@@ -4390,6 +4378,5 @@ on ui_control($button_rule_keyswitch_redirect_midi_learn3)
     $keyswitch_redirect_midi_learn_index := 3
   end if
 end on
-
 
 
