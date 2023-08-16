@@ -12,7 +12,7 @@ on init
   declare $list_it
   declare $preproc_i
   set_script_title("FlexRouter 3.5")
-  declare const $DEBUG := 1
+  declare const $DEBUG := 0
   declare const $CONFIG_VERSION := 5
   declare const $MAX_GLOBAL_CONFIG := 32
   declare const $GLOBAL_CONFIG_VERSION := 0
@@ -45,10 +45,10 @@ on init
   declare %timing_arr[16] := (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
   declare %transpose_arr[16] := (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
   declare %range_in_arr[16] := (30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30)
-  declare %range_out_arr[16]
+  declare %range_out_arr[16] := (112, 112, 112, 112, 112, 112, 112, 112, 112, 112, 112, 112, 112, 112, 112, 112)
   declare %velocityforcc_arr[16]
   declare %keyswitch_velocityforcc_arr[16]
-  declare %target_arr[16]
+  declare %target_arr[16] := (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
   declare const $RULE_KEYSWITCH_SOURCE_CHANNEL := 2
   declare const $RULE_KEYSWITCH_TARGET_CHANNEL := 3
   declare const $RULE_KEYSWITCH_VELOCITY_RANGE := 4
@@ -204,6 +204,7 @@ on init
   make_persistent($velocityforcc)
   make_persistent($range_in)
   make_persistent($range_out)
+  make_persistent(%target_arr)
   %global_config[$GLOBAL_CONFIG_VERSION] := $CONFIG_VERSION
   %global_config[$GLOBAL_CONFIG_CC_HANGING] := 2
   !rules___name[0] := "Group 1"
@@ -312,6 +313,7 @@ on init
   read_persistent_var($range_in)
   read_persistent_var($range_out)
   read_persistent_var($transpose)
+  read_persistent_var(%target_arr)
   if (%global_config[$GLOBAL_CONFIG_VERSION]<2)
     $rule := 0
     while ($rule<$MAX_RULES)
@@ -3293,6 +3295,486 @@ on midi_in
     $need_maps_rebuild := 0
     call build_ks_maps
   end if
+  if ($MIDI_CHANNEL=0)
+    ignore_midi
+    if (%timing_arr[0]>0)
+      wait(%timing_arr[0]*1000)
+    end if
+    if (%target_arr[0]=0)
+      %target_arr[0] := 0+1
+    end if
+    if ($MIDI_COMMAND=$MIDI_COMMAND_CC)
+      %cc_value_0[$MIDI_BYTE_1] := $MIDI_BYTE_2
+    end if
+    if ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_ON or ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_OFF))
+      if ($MIDI_BYTE_1>=%range_in_arr[0] and ($MIDI_BYTE_1<=%range_out_arr[0]))
+        if (%keyswitch_velocityforcc_arr[0]=1)
+          %transpose_arr[0] := %transpose_arr[0]
+          %cc_value_0[%velocityforcc_arr[0]] := %cc_value_0[%velocityforcc_arr[0]]
+        else
+          %transpose_arr[0] := %transpose_arr[0]
+          %cc_value_0[%velocityforcc_arr[0]] := $MIDI_BYTE_2
+        end if
+      else
+        %transpose_arr[0] := 0
+        %cc_value_0[%velocityforcc_arr[0]] := $MIDI_BYTE_2
+      end if
+    else
+      %transpose_arr[0] := 0
+      %cc_value_0[%velocityforcc_arr[0]] := $MIDI_BYTE_2
+    end if
+    set_midi(%target_arr[0]-1,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[0],%cc_value_0[%velocityforcc_arr[0]])
+  end if
+  if ($MIDI_CHANNEL=1)
+    ignore_midi
+    if (%timing_arr[1]>0)
+      wait(%timing_arr[1]*1000)
+    end if
+    if (%target_arr[1]=0)
+      %target_arr[1] := 1+1
+    end if
+    if ($MIDI_COMMAND=$MIDI_COMMAND_CC)
+      %cc_value_1[$MIDI_BYTE_1] := $MIDI_BYTE_2
+    end if
+    if ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_ON or ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_OFF))
+      if ($MIDI_BYTE_1>=%range_in_arr[1] and ($MIDI_BYTE_1<=%range_out_arr[1]))
+        if (%keyswitch_velocityforcc_arr[1]=1)
+          %transpose_arr[1] := %transpose_arr[1]
+          %cc_value_1[%velocityforcc_arr[1]] := %cc_value_1[%velocityforcc_arr[1]]
+        else
+          %transpose_arr[1] := %transpose_arr[1]
+          %cc_value_1[%velocityforcc_arr[1]] := $MIDI_BYTE_2
+        end if
+      else
+        %transpose_arr[1] := 0
+        %cc_value_1[%velocityforcc_arr[1]] := $MIDI_BYTE_2
+      end if
+    else
+      %transpose_arr[1] := 0
+      %cc_value_1[%velocityforcc_arr[1]] := $MIDI_BYTE_2
+    end if
+    set_midi(%target_arr[1]-1,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[1],%cc_value_1[%velocityforcc_arr[1]])
+  end if
+  if ($MIDI_CHANNEL=2)
+    ignore_midi
+    if (%timing_arr[2]>0)
+      wait(%timing_arr[2]*1000)
+    end if
+    if (%target_arr[2]=0)
+      %target_arr[2] := 2+1
+    end if
+    if ($MIDI_COMMAND=$MIDI_COMMAND_CC)
+      %cc_value_2[$MIDI_BYTE_1] := $MIDI_BYTE_2
+    end if
+    if ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_ON or ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_OFF))
+      if ($MIDI_BYTE_1>=%range_in_arr[2] and ($MIDI_BYTE_1<=%range_out_arr[2]))
+        if (%keyswitch_velocityforcc_arr[2]=1)
+          %transpose_arr[2] := %transpose_arr[2]
+          %cc_value_2[%velocityforcc_arr[2]] := %cc_value_2[%velocityforcc_arr[2]]
+        else
+          %transpose_arr[2] := %transpose_arr[2]
+          %cc_value_2[%velocityforcc_arr[2]] := $MIDI_BYTE_2
+        end if
+      else
+        %transpose_arr[2] := 0
+        %cc_value_2[%velocityforcc_arr[2]] := $MIDI_BYTE_2
+      end if
+    else
+      %transpose_arr[2] := 0
+      %cc_value_2[%velocityforcc_arr[2]] := $MIDI_BYTE_2
+    end if
+    set_midi(%target_arr[2]-1,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[2],%cc_value_2[%velocityforcc_arr[2]])
+  end if
+  if ($MIDI_CHANNEL=3)
+    ignore_midi
+    if (%timing_arr[3]>0)
+      wait(%timing_arr[3]*1000)
+    end if
+    if (%target_arr[3]=0)
+      %target_arr[3] := 3+1
+    end if
+    if ($MIDI_COMMAND=$MIDI_COMMAND_CC)
+      %cc_value_3[$MIDI_BYTE_1] := $MIDI_BYTE_2
+    end if
+    if ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_ON or ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_OFF))
+      if ($MIDI_BYTE_1>=%range_in_arr[3] and ($MIDI_BYTE_1<=%range_out_arr[3]))
+        if (%keyswitch_velocityforcc_arr[3]=1)
+          %transpose_arr[3] := %transpose_arr[3]
+          %cc_value_3[%velocityforcc_arr[3]] := %cc_value_3[%velocityforcc_arr[3]]
+        else
+          %transpose_arr[3] := %transpose_arr[3]
+          %cc_value_3[%velocityforcc_arr[3]] := $MIDI_BYTE_2
+        end if
+      else
+        %transpose_arr[3] := 0
+        %cc_value_3[%velocityforcc_arr[3]] := $MIDI_BYTE_2
+      end if
+    else
+      %transpose_arr[3] := 0
+      %cc_value_3[%velocityforcc_arr[3]] := $MIDI_BYTE_2
+    end if
+    set_midi(%target_arr[3]-1,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[3],%cc_value_3[%velocityforcc_arr[3]])
+  end if
+  if ($MIDI_CHANNEL=4)
+    ignore_midi
+    if (%timing_arr[4]>0)
+      wait(%timing_arr[4]*1000)
+    end if
+    if (%target_arr[4]=0)
+      %target_arr[4] := 4+1
+    end if
+    if ($MIDI_COMMAND=$MIDI_COMMAND_CC)
+      %cc_value_4[$MIDI_BYTE_1] := $MIDI_BYTE_2
+    end if
+    if ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_ON or ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_OFF))
+      if ($MIDI_BYTE_1>=%range_in_arr[4] and ($MIDI_BYTE_1<=%range_out_arr[4]))
+        if (%keyswitch_velocityforcc_arr[4]=1)
+          %transpose_arr[4] := %transpose_arr[4]
+          %cc_value_4[%velocityforcc_arr[4]] := %cc_value_4[%velocityforcc_arr[4]]
+        else
+          %transpose_arr[4] := %transpose_arr[4]
+          %cc_value_4[%velocityforcc_arr[4]] := $MIDI_BYTE_2
+        end if
+      else
+        %transpose_arr[4] := 0
+        %cc_value_4[%velocityforcc_arr[4]] := $MIDI_BYTE_2
+      end if
+    else
+      %transpose_arr[4] := 0
+      %cc_value_4[%velocityforcc_arr[4]] := $MIDI_BYTE_2
+    end if
+    set_midi(%target_arr[4]-1,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[4],%cc_value_4[%velocityforcc_arr[4]])
+  end if
+  if ($MIDI_CHANNEL=5)
+    ignore_midi
+    if (%timing_arr[5]>0)
+      wait(%timing_arr[5]*1000)
+    end if
+    if (%target_arr[5]=0)
+      %target_arr[5] := 5+1
+    end if
+    if ($MIDI_COMMAND=$MIDI_COMMAND_CC)
+      %cc_value_5[$MIDI_BYTE_1] := $MIDI_BYTE_2
+    end if
+    if ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_ON or ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_OFF))
+      if ($MIDI_BYTE_1>=%range_in_arr[5] and ($MIDI_BYTE_1<=%range_out_arr[5]))
+        if (%keyswitch_velocityforcc_arr[5]=1)
+          %transpose_arr[5] := %transpose_arr[5]
+          %cc_value_5[%velocityforcc_arr[5]] := %cc_value_5[%velocityforcc_arr[5]]
+        else
+          %transpose_arr[5] := %transpose_arr[5]
+          %cc_value_5[%velocityforcc_arr[5]] := $MIDI_BYTE_2
+        end if
+      else
+        %transpose_arr[5] := 0
+        %cc_value_5[%velocityforcc_arr[5]] := $MIDI_BYTE_2
+      end if
+    else
+      %transpose_arr[5] := 0
+      %cc_value_5[%velocityforcc_arr[5]] := $MIDI_BYTE_2
+    end if
+    set_midi(%target_arr[5]-1,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[5],%cc_value_5[%velocityforcc_arr[5]])
+  end if
+  if ($MIDI_CHANNEL=6)
+    ignore_midi
+    if (%timing_arr[6]>0)
+      wait(%timing_arr[6]*1000)
+    end if
+    if (%target_arr[6]=0)
+      %target_arr[6] := 6+1
+    end if
+    if ($MIDI_COMMAND=$MIDI_COMMAND_CC)
+      %cc_value_6[$MIDI_BYTE_1] := $MIDI_BYTE_2
+    end if
+    if ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_ON or ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_OFF))
+      if ($MIDI_BYTE_1>=%range_in_arr[6] and ($MIDI_BYTE_1<=%range_out_arr[6]))
+        if (%keyswitch_velocityforcc_arr[6]=1)
+          %transpose_arr[6] := %transpose_arr[6]
+          %cc_value_6[%velocityforcc_arr[6]] := %cc_value_6[%velocityforcc_arr[6]]
+        else
+          %transpose_arr[6] := %transpose_arr[6]
+          %cc_value_6[%velocityforcc_arr[6]] := $MIDI_BYTE_2
+        end if
+      else
+        %transpose_arr[6] := 0
+        %cc_value_6[%velocityforcc_arr[6]] := $MIDI_BYTE_2
+      end if
+    else
+      %transpose_arr[6] := 0
+      %cc_value_6[%velocityforcc_arr[6]] := $MIDI_BYTE_2
+    end if
+    set_midi(%target_arr[6]-1,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[6],%cc_value_6[%velocityforcc_arr[6]])
+  end if
+  if ($MIDI_CHANNEL=7)
+    ignore_midi
+    if (%timing_arr[7]>0)
+      wait(%timing_arr[7]*1000)
+    end if
+    if (%target_arr[7]=0)
+      %target_arr[7] := 7+1
+    end if
+    if ($MIDI_COMMAND=$MIDI_COMMAND_CC)
+      %cc_value_7[$MIDI_BYTE_1] := $MIDI_BYTE_2
+    end if
+    if ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_ON or ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_OFF))
+      if ($MIDI_BYTE_1>=%range_in_arr[7] and ($MIDI_BYTE_1<=%range_out_arr[7]))
+        if (%keyswitch_velocityforcc_arr[7]=1)
+          %transpose_arr[7] := %transpose_arr[7]
+          %cc_value_7[%velocityforcc_arr[7]] := %cc_value_7[%velocityforcc_arr[7]]
+        else
+          %transpose_arr[7] := %transpose_arr[7]
+          %cc_value_7[%velocityforcc_arr[7]] := $MIDI_BYTE_2
+        end if
+      else
+        %transpose_arr[7] := 0
+        %cc_value_7[%velocityforcc_arr[7]] := $MIDI_BYTE_2
+      end if
+    else
+      %transpose_arr[7] := 0
+      %cc_value_7[%velocityforcc_arr[7]] := $MIDI_BYTE_2
+    end if
+    set_midi(%target_arr[7]-1,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[7],%cc_value_7[%velocityforcc_arr[7]])
+  end if
+  if ($MIDI_CHANNEL=8)
+    ignore_midi
+    if (%timing_arr[8]>0)
+      wait(%timing_arr[8]*1000)
+    end if
+    if (%target_arr[8]=0)
+      %target_arr[8] := 8+1
+    end if
+    if ($MIDI_COMMAND=$MIDI_COMMAND_CC)
+      %cc_value_8[$MIDI_BYTE_1] := $MIDI_BYTE_2
+    end if
+    if ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_ON or ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_OFF))
+      if ($MIDI_BYTE_1>=%range_in_arr[8] and ($MIDI_BYTE_1<=%range_out_arr[8]))
+        if (%keyswitch_velocityforcc_arr[8]=1)
+          %transpose_arr[8] := %transpose_arr[8]
+          %cc_value_8[%velocityforcc_arr[8]] := %cc_value_8[%velocityforcc_arr[8]]
+        else
+          %transpose_arr[8] := %transpose_arr[8]
+          %cc_value_8[%velocityforcc_arr[8]] := $MIDI_BYTE_2
+        end if
+      else
+        %transpose_arr[8] := 0
+        %cc_value_8[%velocityforcc_arr[8]] := $MIDI_BYTE_2
+      end if
+    else
+      %transpose_arr[8] := 0
+      %cc_value_8[%velocityforcc_arr[8]] := $MIDI_BYTE_2
+    end if
+    set_midi(%target_arr[8]-1,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[8],%cc_value_8[%velocityforcc_arr[8]])
+  end if
+  if ($MIDI_CHANNEL=9)
+    ignore_midi
+    if (%timing_arr[9]>0)
+      wait(%timing_arr[9]*1000)
+    end if
+    if (%target_arr[9]=0)
+      %target_arr[9] := 9+1
+    end if
+    if ($MIDI_COMMAND=$MIDI_COMMAND_CC)
+      %cc_value_9[$MIDI_BYTE_1] := $MIDI_BYTE_2
+    end if
+    if ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_ON or ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_OFF))
+      if ($MIDI_BYTE_1>=%range_in_arr[9] and ($MIDI_BYTE_1<=%range_out_arr[9]))
+        if (%keyswitch_velocityforcc_arr[9]=1)
+          %transpose_arr[9] := %transpose_arr[9]
+          %cc_value_9[%velocityforcc_arr[9]] := %cc_value_9[%velocityforcc_arr[9]]
+        else
+          %transpose_arr[9] := %transpose_arr[9]
+          %cc_value_9[%velocityforcc_arr[9]] := $MIDI_BYTE_2
+        end if
+      else
+        %transpose_arr[9] := 0
+        %cc_value_9[%velocityforcc_arr[9]] := $MIDI_BYTE_2
+      end if
+    else
+      %transpose_arr[9] := 0
+      %cc_value_9[%velocityforcc_arr[9]] := $MIDI_BYTE_2
+    end if
+    set_midi(%target_arr[9]-1,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[9],%cc_value_9[%velocityforcc_arr[9]])
+  end if
+  if ($MIDI_CHANNEL=10)
+    ignore_midi
+    if (%timing_arr[10]>0)
+      wait(%timing_arr[10]*1000)
+    end if
+    if (%target_arr[10]=0)
+      %target_arr[10] := 10+1
+    end if
+    if ($MIDI_COMMAND=$MIDI_COMMAND_CC)
+      %cc_value_10[$MIDI_BYTE_1] := $MIDI_BYTE_2
+    end if
+    if ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_ON or ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_OFF))
+      if ($MIDI_BYTE_1>=%range_in_arr[10] and ($MIDI_BYTE_1<=%range_out_arr[10]))
+        if (%keyswitch_velocityforcc_arr[10]=1)
+          %transpose_arr[10] := %transpose_arr[10]
+          %cc_value_10[%velocityforcc_arr[10]] := %cc_value_10[%velocityforcc_arr[10]]
+        else
+          %transpose_arr[10] := %transpose_arr[10]
+          %cc_value_10[%velocityforcc_arr[10]] := $MIDI_BYTE_2
+        end if
+      else
+        %transpose_arr[10] := 0
+        %cc_value_10[%velocityforcc_arr[10]] := $MIDI_BYTE_2
+      end if
+    else
+      %transpose_arr[10] := 0
+      %cc_value_10[%velocityforcc_arr[10]] := $MIDI_BYTE_2
+    end if
+    set_midi(%target_arr[10]-1,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[10],%cc_value_10[%velocityforcc_arr[10]])
+  end if
+  if ($MIDI_CHANNEL=11)
+    ignore_midi
+    if (%timing_arr[11]>0)
+      wait(%timing_arr[11]*1000)
+    end if
+    if (%target_arr[11]=0)
+      %target_arr[11] := 11+1
+    end if
+    if ($MIDI_COMMAND=$MIDI_COMMAND_CC)
+      %cc_value_11[$MIDI_BYTE_1] := $MIDI_BYTE_2
+    end if
+    if ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_ON or ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_OFF))
+      if ($MIDI_BYTE_1>=%range_in_arr[11] and ($MIDI_BYTE_1<=%range_out_arr[11]))
+        if (%keyswitch_velocityforcc_arr[11]=1)
+          %transpose_arr[11] := %transpose_arr[11]
+          %cc_value_11[%velocityforcc_arr[11]] := %cc_value_11[%velocityforcc_arr[11]]
+        else
+          %transpose_arr[11] := %transpose_arr[11]
+          %cc_value_11[%velocityforcc_arr[11]] := $MIDI_BYTE_2
+        end if
+      else
+        %transpose_arr[11] := 0
+        %cc_value_11[%velocityforcc_arr[11]] := $MIDI_BYTE_2
+      end if
+    else
+      %transpose_arr[11] := 0
+      %cc_value_11[%velocityforcc_arr[11]] := $MIDI_BYTE_2
+    end if
+    set_midi(%target_arr[11]-1,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[11],%cc_value_11[%velocityforcc_arr[11]])
+  end if
+  if ($MIDI_CHANNEL=12)
+    ignore_midi
+    if (%timing_arr[12]>0)
+      wait(%timing_arr[12]*1000)
+    end if
+    if (%target_arr[12]=0)
+      %target_arr[12] := 12+1
+    end if
+    if ($MIDI_COMMAND=$MIDI_COMMAND_CC)
+      %cc_value_12[$MIDI_BYTE_1] := $MIDI_BYTE_2
+    end if
+    if ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_ON or ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_OFF))
+      if ($MIDI_BYTE_1>=%range_in_arr[12] and ($MIDI_BYTE_1<=%range_out_arr[12]))
+        if (%keyswitch_velocityforcc_arr[12]=1)
+          %transpose_arr[12] := %transpose_arr[12]
+          %cc_value_12[%velocityforcc_arr[12]] := %cc_value_12[%velocityforcc_arr[12]]
+        else
+          %transpose_arr[12] := %transpose_arr[12]
+          %cc_value_12[%velocityforcc_arr[12]] := $MIDI_BYTE_2
+        end if
+      else
+        %transpose_arr[12] := 0
+        %cc_value_12[%velocityforcc_arr[12]] := $MIDI_BYTE_2
+      end if
+    else
+      %transpose_arr[12] := 0
+      %cc_value_12[%velocityforcc_arr[12]] := $MIDI_BYTE_2
+    end if
+    set_midi(%target_arr[12]-1,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[12],%cc_value_12[%velocityforcc_arr[12]])
+  end if
+  if ($MIDI_CHANNEL=13)
+    ignore_midi
+    if (%timing_arr[13]>0)
+      wait(%timing_arr[13]*1000)
+    end if
+    if (%target_arr[13]=0)
+      %target_arr[13] := 13+1
+    end if
+    if ($MIDI_COMMAND=$MIDI_COMMAND_CC)
+      %cc_value_13[$MIDI_BYTE_1] := $MIDI_BYTE_2
+    end if
+    if ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_ON or ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_OFF))
+      if ($MIDI_BYTE_1>=%range_in_arr[13] and ($MIDI_BYTE_1<=%range_out_arr[13]))
+        if (%keyswitch_velocityforcc_arr[13]=1)
+          %transpose_arr[13] := %transpose_arr[13]
+          %cc_value_13[%velocityforcc_arr[13]] := %cc_value_13[%velocityforcc_arr[13]]
+        else
+          %transpose_arr[13] := %transpose_arr[13]
+          %cc_value_13[%velocityforcc_arr[13]] := $MIDI_BYTE_2
+        end if
+      else
+        %transpose_arr[13] := 0
+        %cc_value_13[%velocityforcc_arr[13]] := $MIDI_BYTE_2
+      end if
+    else
+      %transpose_arr[13] := 0
+      %cc_value_13[%velocityforcc_arr[13]] := $MIDI_BYTE_2
+    end if
+    set_midi(%target_arr[13]-1,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[13],%cc_value_13[%velocityforcc_arr[13]])
+  end if
+  if ($MIDI_CHANNEL=14)
+    ignore_midi
+    if (%timing_arr[14]>0)
+      wait(%timing_arr[14]*1000)
+    end if
+    if (%target_arr[14]=0)
+      %target_arr[14] := 14+1
+    end if
+    if ($MIDI_COMMAND=$MIDI_COMMAND_CC)
+      %cc_value_14[$MIDI_BYTE_1] := $MIDI_BYTE_2
+    end if
+    if ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_ON or ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_OFF))
+      if ($MIDI_BYTE_1>=%range_in_arr[14] and ($MIDI_BYTE_1<=%range_out_arr[14]))
+        if (%keyswitch_velocityforcc_arr[14]=1)
+          %transpose_arr[14] := %transpose_arr[14]
+          %cc_value_14[%velocityforcc_arr[14]] := %cc_value_14[%velocityforcc_arr[14]]
+        else
+          %transpose_arr[14] := %transpose_arr[14]
+          %cc_value_14[%velocityforcc_arr[14]] := $MIDI_BYTE_2
+        end if
+      else
+        %transpose_arr[14] := 0
+        %cc_value_14[%velocityforcc_arr[14]] := $MIDI_BYTE_2
+      end if
+    else
+      %transpose_arr[14] := 0
+      %cc_value_14[%velocityforcc_arr[14]] := $MIDI_BYTE_2
+    end if
+    set_midi(%target_arr[14]-1,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[14],%cc_value_14[%velocityforcc_arr[14]])
+  end if
+  if ($MIDI_CHANNEL=15)
+    ignore_midi
+    if (%timing_arr[15]>0)
+      wait(%timing_arr[15]*1000)
+    end if
+    if (%target_arr[15]=0)
+      %target_arr[15] := 15+1
+    end if
+    if ($MIDI_COMMAND=$MIDI_COMMAND_CC)
+      %cc_value_15[$MIDI_BYTE_1] := $MIDI_BYTE_2
+    end if
+    if ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_ON or ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_OFF))
+      if ($MIDI_BYTE_1>=%range_in_arr[15] and ($MIDI_BYTE_1<=%range_out_arr[15]))
+        if (%keyswitch_velocityforcc_arr[15]=1)
+          %transpose_arr[15] := %transpose_arr[15]
+          %cc_value_15[%velocityforcc_arr[15]] := %cc_value_15[%velocityforcc_arr[15]]
+        else
+          %transpose_arr[15] := %transpose_arr[15]
+          %cc_value_15[%velocityforcc_arr[15]] := $MIDI_BYTE_2
+        end if
+      else
+        %transpose_arr[15] := 0
+        %cc_value_15[%velocityforcc_arr[15]] := $MIDI_BYTE_2
+      end if
+    else
+      %transpose_arr[15] := 0
+      %cc_value_15[%velocityforcc_arr[15]] := $MIDI_BYTE_2
+    end if
+    set_midi(%target_arr[15]-1,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[15],%cc_value_15[%velocityforcc_arr[15]])
+  end if
   if ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_ON and ($MIDI_BYTE_2>0))
     $is_note_on_event := 1
   else
@@ -3400,11 +3882,15 @@ on midi_in
                       if ($target>0)
                         $target := $target-1
                         $action := %rules___keyswitch_config[$rule*$MAX_KEYSWITCHES_PER_RULE*$MAX_CONFIG_PER_KEYSWITCH+($idx*$MAX_CONFIG_PER_KEYSWITCH)+$RULE_KEYSWITCH_ACTION]
-                        $j := 0
-                        while ($j<$NUM_SOURCE_CHANNELS)
-                          %target_arr[$j] := $target
-                          inc($j)
-                        end while
+                        if ($source=-1)
+                          $j := 0
+                          while ($j<$NUM_SOURCE_CHANNELS)
+                            %target_arr[$j] := %rules___keyswitch_config[$rule*$MAX_KEYSWITCHES_PER_RULE*$MAX_CONFIG_PER_KEYSWITCH+($idx*$MAX_CONFIG_PER_KEYSWITCH)+$RULE_KEYSWITCH_TARGET_CHANNEL]
+                            inc($j)
+                          end while
+                        else
+                          %target_arr[$source-1] := %rules___keyswitch_config[$rule*$MAX_KEYSWITCHES_PER_RULE*$MAX_CONFIG_PER_KEYSWITCH+($idx*$MAX_CONFIG_PER_KEYSWITCH)+$RULE_KEYSWITCH_TARGET_CHANNEL]
+                        end if
                         if ($source=-1)
                           $j := 0
                           while ($j<$NUM_SOURCE_CHANNELS)
@@ -3705,358 +4191,7 @@ on midi_in
       end if
     end if
   end if
-  if ($MIDI_CHANNEL=0)
-    ignore_midi
-    if (%timing_arr[0]>0)
-      wait(%timing_arr[0]*1000)
-    end if
-    if ($MIDI_COMMAND=$MIDI_COMMAND_CC)
-      %cc_value_0[$MIDI_BYTE_1] := $MIDI_BYTE_2
-    end if
-    if ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_ON or ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_OFF))
-      if ($MIDI_BYTE_1>=%range_in_arr[0] and ($MIDI_BYTE_1<=%range_out_arr[0]))
-        if (%keyswitch_velocityforcc_arr[0]=1)
-          set_midi(0,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[0],%cc_value_0[%velocityforcc_arr[0]])
-        else
-          set_midi(0,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[0],$MIDI_BYTE_2)
-        end if
-      else
-        set_midi(0,$MIDI_COMMAND,$MIDI_BYTE_1,$MIDI_BYTE_2)
-      end if
-    else
-      set_midi(0,$MIDI_COMMAND,$MIDI_BYTE_1,$MIDI_BYTE_2)
-    end if
-  end if
-  if ($MIDI_CHANNEL=1)
-    ignore_midi
-    if (%timing_arr[1]>0)
-      wait(%timing_arr[1]*1000)
-    end if
-    if ($MIDI_COMMAND=$MIDI_COMMAND_CC)
-      %cc_value_1[$MIDI_BYTE_1] := $MIDI_BYTE_2
-    end if
-    if ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_ON or ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_OFF))
-      if ($MIDI_BYTE_1>=%range_in_arr[1] and ($MIDI_BYTE_1<=%range_out_arr[1]))
-        if (%keyswitch_velocityforcc_arr[1]=1)
-          set_midi(1,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[1],%cc_value_1[%velocityforcc_arr[1]])
-        else
-          set_midi(1,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[1],$MIDI_BYTE_2)
-        end if
-      else
-        set_midi(1,$MIDI_COMMAND,$MIDI_BYTE_1,$MIDI_BYTE_2)
-      end if
-    else
-      set_midi(1,$MIDI_COMMAND,$MIDI_BYTE_1,$MIDI_BYTE_2)
-    end if
-  end if
-  if ($MIDI_CHANNEL=2)
-    ignore_midi
-    if (%timing_arr[2]>0)
-      wait(%timing_arr[2]*1000)
-    end if
-    if ($MIDI_COMMAND=$MIDI_COMMAND_CC)
-      %cc_value_2[$MIDI_BYTE_1] := $MIDI_BYTE_2
-    end if
-    if ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_ON or ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_OFF))
-      if ($MIDI_BYTE_1>=%range_in_arr[2] and ($MIDI_BYTE_1<=%range_out_arr[2]))
-        if (%keyswitch_velocityforcc_arr[2]=1)
-          set_midi(2,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[2],%cc_value_2[%velocityforcc_arr[2]])
-        else
-          set_midi(2,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[2],$MIDI_BYTE_2)
-        end if
-      else
-        set_midi(2,$MIDI_COMMAND,$MIDI_BYTE_1,$MIDI_BYTE_2)
-      end if
-    else
-      set_midi(2,$MIDI_COMMAND,$MIDI_BYTE_1,$MIDI_BYTE_2)
-    end if
-  end if
-  if ($MIDI_CHANNEL=3)
-    ignore_midi
-    if (%timing_arr[3]>0)
-      wait(%timing_arr[3]*1000)
-    end if
-    if ($MIDI_COMMAND=$MIDI_COMMAND_CC)
-      %cc_value_3[$MIDI_BYTE_1] := $MIDI_BYTE_2
-    end if
-    if ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_ON or ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_OFF))
-      if ($MIDI_BYTE_1>=%range_in_arr[3] and ($MIDI_BYTE_1<=%range_out_arr[3]))
-        if (%keyswitch_velocityforcc_arr[3]=1)
-          set_midi(3,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[3],%cc_value_3[%velocityforcc_arr[3]])
-        else
-          set_midi(3,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[3],$MIDI_BYTE_2)
-        end if
-      else
-        set_midi(3,$MIDI_COMMAND,$MIDI_BYTE_1,$MIDI_BYTE_2)
-      end if
-    else
-      set_midi(3,$MIDI_COMMAND,$MIDI_BYTE_1,$MIDI_BYTE_2)
-    end if
-  end if
-  if ($MIDI_CHANNEL=4)
-    ignore_midi
-    if (%timing_arr[4]>0)
-      wait(%timing_arr[4]*1000)
-    end if
-    if ($MIDI_COMMAND=$MIDI_COMMAND_CC)
-      %cc_value_4[$MIDI_BYTE_1] := $MIDI_BYTE_2
-    end if
-    if ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_ON or ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_OFF))
-      if ($MIDI_BYTE_1>=%range_in_arr[4] and ($MIDI_BYTE_1<=%range_out_arr[4]))
-        if (%keyswitch_velocityforcc_arr[4]=1)
-          set_midi(4,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[4],%cc_value_4[%velocityforcc_arr[4]])
-        else
-          set_midi(4,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[4],$MIDI_BYTE_2)
-        end if
-      else
-        set_midi(4,$MIDI_COMMAND,$MIDI_BYTE_1,$MIDI_BYTE_2)
-      end if
-    else
-      set_midi(4,$MIDI_COMMAND,$MIDI_BYTE_1,$MIDI_BYTE_2)
-    end if
-  end if
-  if ($MIDI_CHANNEL=5)
-    ignore_midi
-    if (%timing_arr[5]>0)
-      wait(%timing_arr[5]*1000)
-    end if
-    if ($MIDI_COMMAND=$MIDI_COMMAND_CC)
-      %cc_value_5[$MIDI_BYTE_1] := $MIDI_BYTE_2
-    end if
-    if ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_ON or ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_OFF))
-      if ($MIDI_BYTE_1>=%range_in_arr[5] and ($MIDI_BYTE_1<=%range_out_arr[5]))
-        if (%keyswitch_velocityforcc_arr[5]=1)
-          set_midi(5,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[5],%cc_value_5[%velocityforcc_arr[5]])
-        else
-          set_midi(5,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[5],$MIDI_BYTE_2)
-        end if
-      else
-        set_midi(5,$MIDI_COMMAND,$MIDI_BYTE_1,$MIDI_BYTE_2)
-      end if
-    else
-      set_midi(5,$MIDI_COMMAND,$MIDI_BYTE_1,$MIDI_BYTE_2)
-    end if
-  end if
-  if ($MIDI_CHANNEL=6)
-    ignore_midi
-    if (%timing_arr[6]>0)
-      wait(%timing_arr[6]*1000)
-    end if
-    if ($MIDI_COMMAND=$MIDI_COMMAND_CC)
-      %cc_value_6[$MIDI_BYTE_1] := $MIDI_BYTE_2
-    end if
-    if ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_ON or ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_OFF))
-      if ($MIDI_BYTE_1>=%range_in_arr[6] and ($MIDI_BYTE_1<=%range_out_arr[6]))
-        if (%keyswitch_velocityforcc_arr[6]=1)
-          set_midi(6,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[6],%cc_value_6[%velocityforcc_arr[6]])
-        else
-          set_midi(6,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[6],$MIDI_BYTE_2)
-        end if
-      else
-        set_midi(6,$MIDI_COMMAND,$MIDI_BYTE_1,$MIDI_BYTE_2)
-      end if
-    else
-      set_midi(6,$MIDI_COMMAND,$MIDI_BYTE_1,$MIDI_BYTE_2)
-    end if
-  end if
-  if ($MIDI_CHANNEL=7)
-    ignore_midi
-    if (%timing_arr[7]>0)
-      wait(%timing_arr[7]*1000)
-    end if
-    if ($MIDI_COMMAND=$MIDI_COMMAND_CC)
-      %cc_value_7[$MIDI_BYTE_1] := $MIDI_BYTE_2
-    end if
-    if ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_ON or ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_OFF))
-      if ($MIDI_BYTE_1>=%range_in_arr[7] and ($MIDI_BYTE_1<=%range_out_arr[7]))
-        if (%keyswitch_velocityforcc_arr[7]=1)
-          set_midi(7,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[7],%cc_value_7[%velocityforcc_arr[7]])
-        else
-          set_midi(7,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[7],$MIDI_BYTE_2)
-        end if
-      else
-        set_midi(7,$MIDI_COMMAND,$MIDI_BYTE_1,$MIDI_BYTE_2)
-      end if
-    else
-      set_midi(7,$MIDI_COMMAND,$MIDI_BYTE_1,$MIDI_BYTE_2)
-    end if
-  end if
-  if ($MIDI_CHANNEL=8)
-    ignore_midi
-    if (%timing_arr[8]>0)
-      wait(%timing_arr[8]*1000)
-    end if
-    if ($MIDI_COMMAND=$MIDI_COMMAND_CC)
-      %cc_value_8[$MIDI_BYTE_1] := $MIDI_BYTE_2
-    end if
-    if ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_ON or ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_OFF))
-      if ($MIDI_BYTE_1>=%range_in_arr[8] and ($MIDI_BYTE_1<=%range_out_arr[8]))
-        if (%keyswitch_velocityforcc_arr[8]=1)
-          set_midi(8,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[8],%cc_value_8[%velocityforcc_arr[8]])
-        else
-          set_midi(8,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[8],$MIDI_BYTE_2)
-        end if
-      else
-        set_midi(8,$MIDI_COMMAND,$MIDI_BYTE_1,$MIDI_BYTE_2)
-      end if
-    else
-      set_midi(8,$MIDI_COMMAND,$MIDI_BYTE_1,$MIDI_BYTE_2)
-    end if
-  end if
-  if ($MIDI_CHANNEL=9)
-    ignore_midi
-    if (%timing_arr[9]>0)
-      wait(%timing_arr[9]*1000)
-    end if
-    if ($MIDI_COMMAND=$MIDI_COMMAND_CC)
-      %cc_value_9[$MIDI_BYTE_1] := $MIDI_BYTE_2
-    end if
-    if ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_ON or ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_OFF))
-      if ($MIDI_BYTE_1>=%range_in_arr[9] and ($MIDI_BYTE_1<=%range_out_arr[9]))
-        if (%keyswitch_velocityforcc_arr[9]=1)
-          set_midi(9,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[9],%cc_value_9[%velocityforcc_arr[9]])
-        else
-          set_midi(9,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[9],$MIDI_BYTE_2)
-        end if
-      else
-        set_midi(9,$MIDI_COMMAND,$MIDI_BYTE_1,$MIDI_BYTE_2)
-      end if
-    else
-      set_midi(9,$MIDI_COMMAND,$MIDI_BYTE_1,$MIDI_BYTE_2)
-    end if
-  end if
-  if ($MIDI_CHANNEL=10)
-    ignore_midi
-    if (%timing_arr[10]>0)
-      wait(%timing_arr[10]*1000)
-    end if
-    if ($MIDI_COMMAND=$MIDI_COMMAND_CC)
-      %cc_value_10[$MIDI_BYTE_1] := $MIDI_BYTE_2
-    end if
-    if ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_ON or ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_OFF))
-      if ($MIDI_BYTE_1>=%range_in_arr[10] and ($MIDI_BYTE_1<=%range_out_arr[10]))
-        if (%keyswitch_velocityforcc_arr[10]=1)
-          set_midi(10,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[10],%cc_value_10[%velocityforcc_arr[10]])
-        else
-          set_midi(10,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[10],$MIDI_BYTE_2)
-        end if
-      else
-        set_midi(10,$MIDI_COMMAND,$MIDI_BYTE_1,$MIDI_BYTE_2)
-      end if
-    else
-      set_midi(10,$MIDI_COMMAND,$MIDI_BYTE_1,$MIDI_BYTE_2)
-    end if
-  end if
-  if ($MIDI_CHANNEL=11)
-    ignore_midi
-    if (%timing_arr[11]>0)
-      wait(%timing_arr[11]*1000)
-    end if
-    if ($MIDI_COMMAND=$MIDI_COMMAND_CC)
-      %cc_value_11[$MIDI_BYTE_1] := $MIDI_BYTE_2
-    end if
-    if ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_ON or ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_OFF))
-      if ($MIDI_BYTE_1>=%range_in_arr[11] and ($MIDI_BYTE_1<=%range_out_arr[11]))
-        if (%keyswitch_velocityforcc_arr[11]=1)
-          set_midi(11,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[11],%cc_value_11[%velocityforcc_arr[11]])
-        else
-          set_midi(11,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[11],$MIDI_BYTE_2)
-        end if
-      else
-        set_midi(11,$MIDI_COMMAND,$MIDI_BYTE_1,$MIDI_BYTE_2)
-      end if
-    else
-      set_midi(11,$MIDI_COMMAND,$MIDI_BYTE_1,$MIDI_BYTE_2)
-    end if
-  end if
-  if ($MIDI_CHANNEL=12)
-    ignore_midi
-    if (%timing_arr[12]>0)
-      wait(%timing_arr[12]*1000)
-    end if
-    if ($MIDI_COMMAND=$MIDI_COMMAND_CC)
-      %cc_value_12[$MIDI_BYTE_1] := $MIDI_BYTE_2
-    end if
-    if ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_ON or ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_OFF))
-      if ($MIDI_BYTE_1>=%range_in_arr[12] and ($MIDI_BYTE_1<=%range_out_arr[12]))
-        if (%keyswitch_velocityforcc_arr[12]=1)
-          set_midi(12,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[12],%cc_value_12[%velocityforcc_arr[12]])
-        else
-          set_midi(12,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[12],$MIDI_BYTE_2)
-        end if
-      else
-        set_midi(12,$MIDI_COMMAND,$MIDI_BYTE_1,$MIDI_BYTE_2)
-      end if
-    else
-      set_midi(12,$MIDI_COMMAND,$MIDI_BYTE_1,$MIDI_BYTE_2)
-    end if
-  end if
-  if ($MIDI_CHANNEL=13)
-    ignore_midi
-    if (%timing_arr[13]>0)
-      wait(%timing_arr[13]*1000)
-    end if
-    if ($MIDI_COMMAND=$MIDI_COMMAND_CC)
-      %cc_value_13[$MIDI_BYTE_1] := $MIDI_BYTE_2
-    end if
-    if ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_ON or ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_OFF))
-      if ($MIDI_BYTE_1>=%range_in_arr[13] and ($MIDI_BYTE_1<=%range_out_arr[13]))
-        if (%keyswitch_velocityforcc_arr[13]=1)
-          set_midi(13,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[13],%cc_value_13[%velocityforcc_arr[13]])
-        else
-          set_midi(13,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[13],$MIDI_BYTE_2)
-        end if
-      else
-        set_midi(13,$MIDI_COMMAND,$MIDI_BYTE_1,$MIDI_BYTE_2)
-      end if
-    else
-      set_midi(13,$MIDI_COMMAND,$MIDI_BYTE_1,$MIDI_BYTE_2)
-    end if
-  end if
-  if ($MIDI_CHANNEL=14)
-    ignore_midi
-    if (%timing_arr[14]>0)
-      wait(%timing_arr[14]*1000)
-    end if
-    if ($MIDI_COMMAND=$MIDI_COMMAND_CC)
-      %cc_value_14[$MIDI_BYTE_1] := $MIDI_BYTE_2
-    end if
-    if ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_ON or ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_OFF))
-      if ($MIDI_BYTE_1>=%range_in_arr[14] and ($MIDI_BYTE_1<=%range_out_arr[14]))
-        if (%keyswitch_velocityforcc_arr[14]=1)
-          set_midi(14,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[14],%cc_value_14[%velocityforcc_arr[14]])
-        else
-          set_midi(14,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[14],$MIDI_BYTE_2)
-        end if
-      else
-        set_midi(14,$MIDI_COMMAND,$MIDI_BYTE_1,$MIDI_BYTE_2)
-      end if
-    else
-      set_midi(14,$MIDI_COMMAND,$MIDI_BYTE_1,$MIDI_BYTE_2)
-    end if
-  end if
-  if ($MIDI_CHANNEL=15)
-    ignore_midi
-    if (%timing_arr[15]>0)
-      wait(%timing_arr[15]*1000)
-    end if
-    if ($MIDI_COMMAND=$MIDI_COMMAND_CC)
-      %cc_value_15[$MIDI_BYTE_1] := $MIDI_BYTE_2
-    end if
-    if ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_ON or ($MIDI_COMMAND=$MIDI_COMMAND_NOTE_OFF))
-      if ($MIDI_BYTE_1>=%range_in_arr[15] and ($MIDI_BYTE_1<=%range_out_arr[15]))
-        if (%keyswitch_velocityforcc_arr[15]=1)
-          set_midi(15,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[15],%cc_value_15[%velocityforcc_arr[15]])
-        else
-          set_midi(15,$MIDI_COMMAND,$MIDI_BYTE_1+%transpose_arr[15],$MIDI_BYTE_2)
-        end if
-      else
-        set_midi(15,$MIDI_COMMAND,$MIDI_BYTE_1,$MIDI_BYTE_2)
-      end if
-    else
-      set_midi(15,$MIDI_COMMAND,$MIDI_BYTE_1,$MIDI_BYTE_2)
-    end if
-  end if
+  message("" & %target_arr[0] & ", " & %target_arr[1] & ", " & %target_arr[2] & ", " & %target_arr[3] & ", " & %target_arr[4] & ", " & "" & %target_arr[5] & ", " & %target_arr[6] & ", " & %target_arr[7] & ", " & %target_arr[8] & ", " & %target_arr[9] & ", " & "" & %target_arr[10] & ", " & %target_arr[11] & ", " & %target_arr[12] & ", " & %target_arr[13] & ", " & %target_arr[14] & ", " & %target_arr[15])
 end on
 
 on ui_control($button_rule_keyswitch_addremove0)
@@ -4378,5 +4513,4 @@ on ui_control($button_rule_keyswitch_redirect_midi_learn3)
     $keyswitch_redirect_midi_learn_index := 3
   end if
 end on
-
 
